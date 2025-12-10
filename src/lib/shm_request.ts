@@ -24,7 +24,15 @@ export async function shm_request<T = any>(url: string, options?: RequestInit): 
     throw new Error(error || response.statusText);
   }
   
-  return response.json();
+  const contentType = response.headers.get('content-type');
+  let data: any;
+  if (contentType?.includes('application/json')) {
+    data = await response.json();
+  } else {
+    data = await response.text();
+  }
+  return data;
+          
 }
 
 // Нормализация ответа API - может вернуть массив или { data: [] }

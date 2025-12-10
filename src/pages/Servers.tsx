@@ -1,8 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import DataTable, { SortDirection } from '../components/DataTable';
-import EntityModal, { FieldConfig } from '../components/EntityModal';
 import Help from '../components/Help';
 import { shm_request, normalizeListResponse } from '../lib/shm_request';
+import ServerModal from '../modals/ServerModal';
+import ServerCreateModal from '../modals/ServerCreateModal';
+import { Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const serverColumns = [
   { key: 'server_id', label: 'ID', visible: true, sortable: true },
@@ -16,19 +19,6 @@ const serverColumns = [
   { key: 'services_count', label: 'Услуг', visible: false, sortable: true },
 ];
 
-const serverModalFields: FieldConfig[] = [
-  { key: 'server_id', label: 'ID', copyable: true },
-  { key: 'name', label: 'Название' },
-  { key: 'host', label: 'Хост', copyable: true },
-  { key: 'ip', label: 'IP адрес', copyable: true },
-  { key: 'transport', label: 'Транспорт' },
-  { key: 'server_gid', label: 'ID группы', linkTo: '/server-groups' },
-  { key: 'enabled', label: 'Включен', type: 'boolean' },
-  { key: 'weight', label: 'Вес' },
-  { key: 'services_count', label: 'Кол-во услуг' },
-  { key: 'settings', label: 'Настройки', type: 'json' },
-];
-
 function Servers() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,6 +30,7 @@ function Servers() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selectedRow, setSelectedRow] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const fetchData = useCallback((l: number, o: number, f: Record<string, string>, sf?: string, sd?: SortDirection) => {
     setLoading(true);
@@ -87,11 +78,62 @@ function Servers() {
     setModalOpen(true);
   };
 
+  const handleCreate = async (serverData: Record<string, any>) => {
+    try {
+      await shm_request('/shm/v1/admin/server', {
+        method: 'POST',
+        body: JSON.stringify(serverData),
+      });
+      fetchData(limit, offset, filters, sortField, sortDirection);
+    } catch (error) {
+      console.error('Ошибка создания сервера:', error);
+      throw error;
+    }
+  };
+
+  const handleSave = async (serverData: Record<string, any>) => {
+    try {
+      await shm_request('/shm/v1/admin/server', {
+        method: 'PUT',
+        body: JSON.stringify(serverData),
+      });
+      fetchData(limit, offset, filters, sortField, sortDirection);
+    } catch (error) {
+      console.error('Ошибка сохранения сервера:', error);
+      throw error;
+    }
+  };
+
+  const handleDelete = async (serverId: number) => {
+    try {
+      await shm_request(`/shm/v1/admin/server/${serverId}`, {
+        method: 'DELETE',
+      });
+      fetchData(limit, offset, filters, sortField, sortDirection);
+    } catch (error) {
+      console.error('Ошибка удаления сервера:', error);
+      throw error;
+    }
+  };
+
   return (
     <div>
-      <div className="flex items-center mb-4">
-        <h2 className="text-xl font-bold">Сервера</h2>
-        <Help content="<b>Сервера</b>: список серверов, на которых размещаются услуги." />
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <h2 className="text-xl font-bold">Сервера</h2>
+          <Help content="<b>Сервера</b>: список серверов, на которых размещаются услуги." />
+        </div>
+        <button
+          onClick={() => setCreateModalOpen(true)}
+          className="px-4 py-2 rounded flex items-center gap-2"
+          style={{
+            backgroundColor: 'var(--accent-primary)',
+            color: 'var(--accent-text)',
+          }}
+        >
+          <Plus className="w-4 h-4" />
+          Добавить
+        </button>
       </div>
       <DataTable
         columns={serverColumns}
@@ -109,12 +151,17 @@ function Servers() {
         onRefresh={() => fetchData(limit, offset, filters, sortField, sortDirection)}
         storageKey="servers"
       />
-      <EntityModal
+      <ServerModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={`Сервер: ${selectedRow?.name || selectedRow?.server_id || ''}`}
         data={selectedRow}
-        fields={serverModalFields}
+        onSave={handleSave}
+        onDelete={handleDelete}
+      />
+      <ServerCreateModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSave={handleCreate}
       />
     </div>
   );

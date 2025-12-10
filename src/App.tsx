@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -35,10 +37,30 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  useEffect(() => {
+    const handleToastClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Проверяем клик на псевдоэлемент (кнопку закрытия)
+      const toastDiv = target.closest('.toast-with-close');
+      if (toastDiv) {
+        const rect = target.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const width = rect.width;
+        // Если клик в правой части (где кнопка закрытия)
+        if (clickX > width - 40) {
+          toast.dismiss();
+        }
+      }
+    };
+
+    document.addEventListener('click', handleToastClick);
+    return () => document.removeEventListener('click', handleToastClick);
+  }, []);
+
   return (
     <BrowserRouter>
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 3000,
           style: {
@@ -58,6 +80,7 @@ function App() {
               secondary: '#1e293b',
             },
           },
+          className: 'toast-with-close',
         }}
       />
       <Routes>

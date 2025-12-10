@@ -12,6 +12,7 @@ interface JsonEditorProps {
   label?: string;
   className?: string;
   showInput?: boolean;
+  inline?: boolean;
 }
 
 export default function JsonEditor({ 
@@ -21,6 +22,7 @@ export default function JsonEditor({
   label, 
   className = '',
   showInput = true,
+  inline = false,
 }: JsonEditorProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -33,9 +35,11 @@ export default function JsonEditor({
     dataRef.current = data;
   }, [data]);
 
-  // Инициализация редактора при открытии модалки
+  // Инициализация редактора при открытии модалки или inline режиме
   useEffect(() => {
-    if (modalOpen && containerRef.current && !editorRef.current) {
+    const shouldInitialize = inline || modalOpen;
+    
+    if (shouldInitialize && containerRef.current && !editorRef.current) {
       try {
         const options: any = {
           mode: readonly ? 'view' : 'tree',
@@ -43,7 +47,12 @@ export default function JsonEditor({
           onChangeText: (jsonString: string) => {
             if (!readonly) {
               try {
-                dataRef.current = JSON.parse(jsonString);
+                const parsedData = JSON.parse(jsonString);
+                dataRef.current = parsedData;
+                // Для inline режима вызываем onChange сразу
+                if (inline && onChange) {
+                  onChange(parsedData);
+                }
               } catch (e) {
                 // Игнорируем ошибки парсинга во время редактирования
               }
@@ -65,14 +74,14 @@ export default function JsonEditor({
       }
     }
 
-    // Cleanup при закрытии модалки
+    // Cleanup при закрытии модалки (но не для inline режима)
     return () => {
-      if (!modalOpen && editorRef.current) {
+      if (!inline && !modalOpen && editorRef.current) {
         editorRef.current.destroy();
         editorRef.current = null;
       }
     };
-  }, [modalOpen, readonly]);
+  }, [modalOpen, readonly, inline]);
 
   const handleOpen = () => {
     dataRef.current = data;
@@ -115,6 +124,19 @@ export default function JsonEditor({
       return '[Object]';
     }
   };
+
+  // Если inline режим, показываем только редактор
+  if (inline) {
+    return (
+      <div className={className} style={{ width: '100%' }}>
+        <div 
+          ref={containerRef} 
+          className="jsoneditor-react-container"
+          style={{ height: '400px', width: '100%' }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>

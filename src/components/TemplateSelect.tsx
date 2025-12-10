@@ -352,7 +352,7 @@ export default function TemplateSelect({
   }
 
   return (
-    <div ref={containerRef} className={className}>
+    <div ref={containerRef} className={`w-full ${className}`}>
       <div className="flex items-center gap-2">
         {/* Переключатель режима просмотра */}
         <button
@@ -388,18 +388,34 @@ export default function TemplateSelect({
             <FileText className="w-4 h-4" style={{ color: 'var(--theme-content-text-muted)' }} />
           </div>
           
-          <input
-            ref={inputRef}
-            type="text"
-            value={search}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onFocus={handleInputFocus}
-            placeholder={viewMode === 'search' ? '... начните вводить ID шаблона' : 'Выберите шаблон'}
-            disabled={loadingTemplate}
-            className="w-full pl-10 pr-3 py-2 text-sm rounded border"
-            style={inputStyles}
-          />
+          {loadingTemplate ? (
+            <div 
+              className="w-full pl-10 pr-3 py-2 text-sm rounded border"
+              style={inputStyles}
+            >
+              <div className="flex items-center gap-2">
+                <div 
+                  className="h-4 rounded animate-pulse flex-1" 
+                  style={{ 
+                    maxWidth: '100px',
+                    backgroundColor: 'var(--theme-input-border)',
+                  }} 
+                />
+              </div>
+            </div>
+          ) : (
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={handleInputFocus}
+              placeholder={viewMode === 'search' ? '... начните вводить ID шаблона' : 'Выберите шаблон'}
+              className="w-full pl-10 pr-3 py-2 text-sm rounded border"
+              style={inputStyles}
+            />
+          )}
           
           {loading && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">

@@ -675,3 +675,27 @@ body {
   border-color: var(--theme-card-border, #334155) !important;
 }
 
+/* Toast с кнопкой закрытия */
+.toast-with-close {
+  position: relative;
+  padding-right: 2.5rem !important;
+}
+
+.toast-with-close::after {
+  content: '×';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  font-weight: 300;
+}
+
+.toast-with-close:hover::after {
+  opacity: 1;
+}
+

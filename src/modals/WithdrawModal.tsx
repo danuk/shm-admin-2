@@ -191,7 +191,7 @@ export default function WithdrawModal({
         {/* Период */}
         <div className="flex items-center gap-3">
           <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
-            Период (мес.)
+            Период (мес.) 
           </label>
           <input
             type="number"
@@ -203,6 +203,7 @@ export default function WithdrawModal({
             className="flex-1 px-3 py-2 text-sm rounded border"
             style={inputStyles}
           />
+          <span className="text-xs" style={labelStyles}>M.DDHH (M - месяцы, DD - дни, HH - часы)</span>
         </div>
 
         {/* Итого */}

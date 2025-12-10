@@ -123,7 +123,7 @@ export default function PayModal({
           <label className="w-32 text-sm font-medium shrink-0 pt-2" style={labelStyles}>
             Комментарий
           </label>
-          <div className="flex-1 border rounded" style={{ borderColor: inputStyles.borderColor }}>
+          <div className="flex-1">
             <JsonEditor
               data={viewData.comment || {}}
               onChange={() => {}}
