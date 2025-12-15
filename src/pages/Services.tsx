@@ -108,7 +108,7 @@ function Services() {
 
   const handleDeleteService = async (serviceId: number) => {
     try {
-      await shm_request(`/shm/v1/admin/service/${serviceId}`, {
+      await shm_request(`/shm/v1/admin/service?service_id=${serviceId}`, {
         method: 'DELETE',
       });
       setViewModalOpen(false);

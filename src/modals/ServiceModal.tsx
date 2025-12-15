@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../components/Modal';
+import ConfirmModal from '../components/ConfirmModal';
 import { Save, X, Trash2, Copy, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import JsonEditor from '../components/JsonEditor';
@@ -27,6 +28,8 @@ export default function ServiceModal({
   const [saving, setSaving] = useState(false);
   const [services, setServices] = useState<any[]>([]);
   const [childServicesOpen, setChildServicesOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (open && data) {
@@ -68,15 +71,22 @@ export default function ServiceModal({
 
   const handleDelete = async () => {
     if (!onDelete || !formData.service_id) return;
+    setConfirmDelete(true);
+  };
 
-    if (!confirm(`Удалить услугу "${formData.name}"?`)) return;
+  const handleConfirmDelete = async () => {
+    if (!onDelete || !formData.service_id) return;
 
+    setDeleting(true);
+    setConfirmDelete(false);
     try {
       await onDelete(formData.service_id);
       toast.success('Услуга удалена');
       onClose();
     } catch (error) {
       toast.error('Ошибка удаления');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -119,7 +129,8 @@ export default function ServiceModal({
         {onDelete && (
           <button
             onClick={handleDelete}
-            className="px-4 py-2 rounded flex items-center gap-2 btn-danger"
+            disabled={deleting}
+            className="px-4 py-2 rounded flex items-center gap-2 btn-danger disabled:opacity-50"
             style={{
               backgroundColor: 'var(--theme-button-danger-bg)',
               color: 'var(--theme-button-danger-text)',
@@ -127,7 +138,7 @@ export default function ServiceModal({
             }}
           >
             <Trash2 className="w-4 h-4" />
-            Удалить
+            {deleting ? 'Удаление...' : 'Удалить'}
           </button>
         )}
       </div>
@@ -464,6 +475,17 @@ export default function ServiceModal({
       serviceId={formData.service_id}
       serviceName={formData.name}
       availableServices={services}
+    />
+
+    <ConfirmModal
+      open={confirmDelete}
+      onClose={() => setConfirmDelete(false)}
+      onConfirm={handleConfirmDelete}
+      title="Удаление услуги"
+      message={`Вы уверены, что хотите удалить услугу "${formData.name}"? Это действие необратимо.`}
+      confirmText="Удалить"
+      variant="danger"
+      loading={deleting}
     />
   </>
   );

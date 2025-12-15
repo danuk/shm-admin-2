@@ -151,7 +151,7 @@ export default function ServiceCreateModal({
       <button
         onClick={handleCreate}
         disabled={saving}
-        className="px-4 py-2 rounded flex items-center gap-2 disabled:opacity-50"
+        className="px-4 py-2 rounded flex items-center gap-2 disabled:opacity-50 btn-success"
         style={{
           backgroundColor: 'var(--accent-primary)',
           color: 'var(--accent-text)',

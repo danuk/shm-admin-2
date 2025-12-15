@@ -78,14 +78,18 @@ export async function fetchMainStats(): Promise<AnalyticsStats> {
   };
 }
 
-function getDateRange(period: number | 'month'): { startDate: Date; days: number } {
+function calculateDateParams(period: number | 'month'): { start: string; stop: string; filter?: string } {
+  const now = new Date();
+  const stopDate = format(now, 'yyyy-MM-dd');
+  
   if (period === 'month') {
-    const now = new Date();
-    const startDate = startOfMonth(now);
-    const days = now.getDate();
-    return { startDate, days };
+    // Для месяца используем filter вместо start/stop
+    const monthPattern = format(now, 'yyyy-MM-');
+    return { start: '', stop: '', filter: monthPattern + '%' };
   }
-  return { startDate: subDays(new Date(), period), days: period };
+  
+  const startDate = format(subDays(now, period - 1), 'yyyy-MM-dd');
+  return { start: startDate, stop: stopDate };
 }
 
 function filterRealPayments(payments: any[]): any[] {
@@ -97,22 +101,26 @@ function filterRealPayments(payments: any[]): any[] {
 
 export async function fetchPaymentStats(period: number | 'month' = 30): Promise<PaymentStats> {
   try {
-    const res = await shm_request(`/shm/v1/admin/user/pay?limit=1000`);
+    const dateParams = calculateDateParams(period);
+    let url = '/shm/v1/admin/user/pay?limit=10000';
+    
+    if (dateParams.filter) {
+      // Для месяца используем filter
+      url += `&filter=${encodeURIComponent(JSON.stringify({ date: dateParams.filter }))}`;
+    } else if (dateParams.start && dateParams.stop) {
+      // Для других периодов используем start/stop с field
+      url += `&field=date&start=${dateParams.start}&stop=${dateParams.stop}`;
+    }
+    
+    const res = await shm_request(url);
     const { data: allPayments } = normalizeListResponse(res);
     
     const payments = filterRealPayments(allPayments);
 
-    const { startDate, days } = getDateRange(period);
-    const recentPayments = payments.filter((p: any) => {
-      if (!p.date) return false;
-      const payDate = new Date(p.date);
-      return payDate >= startDate;
-    });
-
-    const total = recentPayments.reduce((sum: number, p: any) => sum + (parseFloat(p.money) || 0), 0);
+    const total = payments.reduce((sum: number, p: any) => sum + (parseFloat(p.money) || 0), 0);
 
     const byPaySystemMap = new Map<string, number>();
-    recentPayments.forEach((p: any) => {
+    payments.forEach((p: any) => {
       const system = p.pay_system_id || 'unknown';
       byPaySystemMap.set(system, (byPaySystemMap.get(system) || 0) + (parseFloat(p.money) || 0));
     });
@@ -130,13 +138,13 @@ export async function fetchPaymentStats(period: number | 'month' = 30): Promise<
         timelineMap.set(format(day, 'yyyy-MM-dd'), 0);
       });
     } else {
-      for (let i = days; i >= 0; i--) {
+      for (let i = period - 1; i >= 0; i--) {
         const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
         timelineMap.set(date, 0);
       }
     }
     
-    recentPayments.forEach((p: any) => {
+    payments.forEach((p: any) => {
       if (!p.date) return;
       const date = format(new Date(p.date), 'yyyy-MM-dd');
       if (timelineMap.has(date)) {
@@ -152,7 +160,7 @@ export async function fetchPaymentStats(period: number | 'month' = 30): Promise<
 
     return {
       total,
-      count: recentPayments.length,
+      count: payments.length,
       byPaySystem,
       timeline,
     };
@@ -233,15 +241,21 @@ export async function fetchUserServiceStats(): Promise<UserServiceStats> {
 
 export async function fetchUserStats(period: number | 'month' = 30): Promise<UserStats> {
   try {
-    const res = await shm_request('/shm/v1/admin/user?limit=1000');
-    const { data: users, total } = normalizeListResponse(res);
-
-    const { startDate, days } = getDateRange(period);
-    const newUsers = users.filter((u: any) => {
-      if (!u.created) return false;
-      const createdDate = new Date(u.created);
-      return createdDate >= startDate;
-    });
+    const dateParams = calculateDateParams(period);
+    let url = '/shm/v1/admin/user?limit=10000';
+    
+    if (dateParams.filter) {
+      url += `&filter=${encodeURIComponent(JSON.stringify({ created: dateParams.filter }))}`;
+    } else if (dateParams.start && dateParams.stop) {
+      url += `&field=created&start=${dateParams.start}&stop=${dateParams.stop}`;
+    }
+    
+    const res = await shm_request(url);
+    const { data: newUsers } = normalizeListResponse(res);
+    
+    // Загружаем общее количество пользователей отдельно
+    const totalRes = await shm_request('/shm/v1/admin/user?limit=1');
+    const { total } = normalizeListResponse(totalRes);
 
     const timelineMap = new Map<string, number>();
     if (period === 'month') {
@@ -252,13 +266,13 @@ export async function fetchUserStats(period: number | 'month' = 30): Promise<Use
         timelineMap.set(format(day, 'yyyy-MM-dd'), 0);
       });
     } else {
-      for (let i = days; i >= 0; i--) {
+      for (let i = period - 1; i >= 0; i--) {
         const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
         timelineMap.set(date, 0);
       }
     }
 
-    users.forEach((u: any) => {
+    newUsers.forEach((u: any) => {
       if (!u.created) return;
       const date = format(new Date(u.created), 'yyyy-MM-dd');
       if (timelineMap.has(date)) {
@@ -272,11 +286,12 @@ export async function fetchUserStats(period: number | 'month' = 30): Promise<Use
       label: format(new Date(date), 'dd.MM'),
     }));
 
-    const activeUsers = users.filter((u: any) => {
-      if (!u.last_login) return false;
-      const lastLogin = new Date(u.last_login);
-      return lastLogin >= subDays(new Date(), 7);
-    }).length;
+    // Для активных пользователей загружаем отдельно (последние 7 дней активности)
+    const activeParams = calculateDateParams(7);
+    const activeUrl = `/shm/v1/admin/user?limit=10000&field=last_login&start=${activeParams.start}&stop=${activeParams.stop}`;
+    const activeRes = await shm_request(activeUrl).catch(() => ({ data: [] }));
+    const { data: activeUsersData } = normalizeListResponse(activeRes);
+    const activeUsers = activeUsersData.length;
 
     return {
       total,
@@ -291,9 +306,27 @@ export async function fetchUserStats(period: number | 'month' = 30): Promise<Use
 
 export async function fetchRevenueStats(period: number | 'month' = 30): Promise<RevenueStats> {
   try {
+    const dateParams = calculateDateParams(period);
+    
+    // Формируем URL для платежей
+    let paysUrl = '/shm/v1/admin/user/pay?limit=10000';
+    if (dateParams.filter) {
+      paysUrl += `&filter=${encodeURIComponent(JSON.stringify({ date: dateParams.filter }))}`;
+    } else if (dateParams.start && dateParams.stop) {
+      paysUrl += `&field=date&start=${dateParams.start}&stop=${dateParams.stop}`;
+    }
+    
+    // Формируем URL для списаний
+    let withdrawsUrl = '/shm/v1/admin/user/service/withdraw?limit=10000';
+    if (dateParams.filter) {
+      withdrawsUrl += `&filter=${encodeURIComponent(JSON.stringify({ date: dateParams.filter }))}`;
+    } else if (dateParams.start && dateParams.stop) {
+      withdrawsUrl += `&field=create_date&start=${dateParams.start}&stop=${dateParams.stop}`;
+    }
+    
     const [paysRes, withdrawsRes] = await Promise.all([
-      shm_request('/shm/v1/admin/user/pay?limit=1000').catch(() => ({ data: [] })),
-      shm_request('/shm/v1/admin/user/service/withdraw?limit=1000').catch(() => ({ data: [] })),
+      shm_request(paysUrl).catch(() => ({ data: [] })),
+      shm_request(withdrawsUrl).catch(() => ({ data: [] })),
     ]);
 
     const { data: allPayments } = normalizeListResponse(paysRes);
@@ -301,21 +334,9 @@ export async function fetchRevenueStats(period: number | 'month' = 30): Promise<
     
     const payments = filterRealPayments(allPayments);
 
-    const { startDate, days } = getDateRange(period);
-
-    const recentPayments = payments.filter((p: any) => {
-      if (!p.date) return false;
-      return new Date(p.date) >= startDate;
-    });
-
-    const recentWithdraws = withdraws.filter((w: any) => {
-      if (!w.date) return false;
-      return new Date(w.date) >= startDate;
-    });
-
-    const totalRevenue = recentPayments.reduce((sum: number, p: any) => 
+    const totalRevenue = payments.reduce((sum: number, p: any) => 
       sum + (parseFloat(p.money) || 0), 0);
-    const totalWithdraws = recentWithdraws.reduce((sum: number, w: any) => 
+    const totalWithdraws = withdraws.reduce((sum: number, w: any) => 
       sum + (parseFloat(w.cost) || parseFloat(w.money) || 0), 0);
 
     const revenueTimelineMap = new Map<string, number>();
@@ -331,14 +352,14 @@ export async function fetchRevenueStats(period: number | 'month' = 30): Promise<
         withdrawTimelineMap.set(dateStr, 0);
       });
     } else {
-      for (let i = days; i >= 0; i--) {
+      for (let i = period - 1; i >= 0; i--) {
         const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
         revenueTimelineMap.set(date, 0);
         withdrawTimelineMap.set(date, 0);
       }
     }
 
-    recentPayments.forEach((p: any) => {
+    payments.forEach((p: any) => {
       if (!p.date) return;
       const date = format(new Date(p.date), 'yyyy-MM-dd');
       if (revenueTimelineMap.has(date)) {
@@ -346,7 +367,7 @@ export async function fetchRevenueStats(period: number | 'month' = 30): Promise<
       }
     });
 
-    recentWithdraws.forEach((w: any) => {
+    withdraws.forEach((w: any) => {
       if (!w.date) return;
       const date = format(new Date(w.date), 'yyyy-MM-dd');
       if (withdrawTimelineMap.has(date)) {

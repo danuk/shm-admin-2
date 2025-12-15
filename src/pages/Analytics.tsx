@@ -50,6 +50,7 @@ type TimePeriod = 7 | 14 | 30 | 90 | 'month';
 function Analytics() {
   const { settings, get: getCached, set: setCache, needsBackgroundRefresh } = useCacheStore();
   const [loading, setLoading] = useState(true);
+  const [periodLoading, setPeriodLoading] = useState(false);
   const [isBackgroundRefresh, setIsBackgroundRefresh] = useState(false);
   const backgroundRefreshRef = useRef(false);
   const [period, setPeriod] = useState<TimePeriod>('month');
@@ -64,43 +65,40 @@ function Analytics() {
   const [topCustomers, setTopCustomers] = useState<TopCustomer[]>([]);
   const [mrrStats, setMrrStats] = useState<MRRStats | null>(null);
 
-  const cacheKey = `analytics_${period}`;
+  const periodCacheKey = `analytics_period_${period}`;
+  const staticCacheKey = 'analytics_static';
 
-  const fetchAllData = async (forceRefresh = false) => {
+  // Загрузка данных, не зависящих от периода (только при монтировании)
+  const fetchStaticData = async (forceRefresh = false) => {
     if (!forceRefresh && settings.enabled) {
-      const cached = getCached(cacheKey);
+      const cached = getCached(staticCacheKey);
       if (cached) {
-        setPaymentStats(cached.paymentStats);
         setUserServiceStats(cached.userServiceStats);
-        setUserStats(cached.userStats);
-        setRevenueStats(cached.revenueStats);
         setTaskStats(cached.taskStats);
         setTopServices(cached.topServices);
         setServerStats(cached.serverStats);
         setFinancialMetrics(cached.financialMetrics);
         setTopCustomers(cached.topCustomers);
         setMrrStats(cached.mrrStats);
-        setLoading(false);
-
-        if (needsBackgroundRefresh(cacheKey) && !backgroundRefreshRef.current) {
+        
+        // Проверяем, нужно ли фоновое обновление
+        if (needsBackgroundRefresh(staticCacheKey) && !backgroundRefreshRef.current) {
           backgroundRefreshRef.current = true;
           setIsBackgroundRefresh(true);
-          fetchAllData(true);
+          setTimeout(() => {
+            fetchStaticData(true).finally(() => {
+              setIsBackgroundRefresh(false);
+              backgroundRefreshRef.current = false;
+            });
+          }, 100);
         }
         return;
       }
     }
-
-    if (!isBackgroundRefresh) {
-      setLoading(true);
-    }
     
     try {
       const [
-        payments,
         userServices,
-        users,
-        revenue,
         tasks,
         services,
         servers,
@@ -108,10 +106,7 @@ function Analytics() {
         customers,
         mrr,
       ] = await Promise.all([
-        fetchPaymentStats(period),
         fetchUserServiceStats(),
-        fetchUserStats(period),
-        fetchRevenueStats(period),
         fetchTaskStats(),
         fetchTopServices(),
         fetchServerStats(),
@@ -121,10 +116,7 @@ function Analytics() {
       ]);
 
       const data = {
-        paymentStats: payments,
         userServiceStats: userServices,
-        userStats: users,
-        revenueStats: revenue,
         taskStats: tasks,
         topServices: services,
         serverStats: servers,
@@ -133,10 +125,7 @@ function Analytics() {
         mrrStats: mrr,
       };
 
-      setPaymentStats(payments);
       setUserServiceStats(userServices);
-      setUserStats(users);
-      setRevenueStats(revenue);
       setTaskStats(tasks);
       setTopServices(services);
       setServerStats(servers);
@@ -145,23 +134,149 @@ function Analytics() {
       setMrrStats(mrr);
 
       if (settings.enabled) {
-        setCache(cacheKey, data);
-      }
-
-      if (isBackgroundRefresh) {
-        setIsBackgroundRefresh(false);
-        backgroundRefreshRef.current = false;
+        setCache(staticCacheKey, data);
       }
     } catch (error) {
-    } finally {
-      setLoading(false);
+      console.error('Error fetching static data:', error);
     }
   };
 
+  // Загрузка данных, зависящих от периода
+  const fetchPeriodData = async (forceRefresh = false) => {
+    if (!forceRefresh && settings.enabled) {
+      const cached = getCached(periodCacheKey);
+      if (cached) {
+        setPaymentStats(cached.paymentStats);
+        setUserStats(cached.userStats);
+        setRevenueStats(cached.revenueStats);
+        setPeriodLoading(false);
+        
+        // Проверяем, нужно ли фоновое обновление
+        if (needsBackgroundRefresh(periodCacheKey) && !backgroundRefreshRef.current) {
+          backgroundRefreshRef.current = true;
+          setIsBackgroundRefresh(true);
+          setTimeout(() => {
+            fetchPeriodData(true).finally(() => {
+              setIsBackgroundRefresh(false);
+              backgroundRefreshRef.current = false;
+            });
+          }, 100);
+        }
+        return;
+      }
+    }
+
+    setPeriodLoading(true);
+    
+    try {
+      const [payments, users, revenue] = await Promise.all([
+        fetchPaymentStats(period),
+        fetchUserStats(period),
+        fetchRevenueStats(period),
+      ]);
+
+      const data = {
+        paymentStats: payments,
+        userStats: users,
+        revenueStats: revenue,
+      };
+
+      setPaymentStats(payments);
+      setUserStats(users);
+      setRevenueStats(revenue);
+
+      if (settings.enabled) {
+        setCache(periodCacheKey, data);
+      }
+    } catch (error) {
+      console.error('Error fetching period data:', error);
+    } finally {
+      setPeriodLoading(false);
+    }
+  };
+
+  // Начальная загрузка (при монтировании)
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true);
+      await Promise.all([
+        fetchStaticData(false),
+        fetchPeriodData(false),
+      ]);
+      setLoading(false);
+    };
+    
+    loadInitialData();
+  }, []);
+
+  // Обновление при изменении периода
   useEffect(() => {
     backgroundRefreshRef.current = false;
-    fetchAllData(false);
+    fetchPeriodData(false);
   }, [period]);
+
+  // Автоматическое обновление при активной вкладке
+  useEffect(() => {
+    if (!settings.backgroundRefresh || !settings.enabled) return;
+
+    let intervalId: number | null = null;
+    let isVisible = true;
+
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      
+      if (isVisible && settings.backgroundRefresh) {
+        // Вкладка стала активной - проверяем кеш и запускаем интервал
+        if (needsBackgroundRefresh(staticCacheKey)) {
+          fetchStaticData(true);
+        }
+        if (needsBackgroundRefresh(periodCacheKey)) {
+          fetchPeriodData(true);
+        }
+        
+        // Запускаем периодическое обновление (проверка каждые 30 секунд)
+        if (intervalId) clearInterval(intervalId);
+        intervalId = window.setInterval(() => {
+          if (document.hidden) return; // Двойная проверка
+          
+          if (needsBackgroundRefresh(staticCacheKey)) {
+            fetchStaticData(true);
+          }
+          if (needsBackgroundRefresh(periodCacheKey)) {
+            fetchPeriodData(true);
+          }
+        }, 30000); // Проверяем каждые 30 секунд
+      } else if (intervalId) {
+        // Вкладка стала неактивной - останавливаем обновление
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    // Проверяем начальное состояние и запускаем интервал если вкладка активна
+    if (!document.hidden) {
+      intervalId = window.setInterval(() => {
+        if (document.hidden) return;
+        
+        if (needsBackgroundRefresh(staticCacheKey)) {
+          fetchStaticData(true);
+        }
+        if (needsBackgroundRefresh(periodCacheKey)) {
+          fetchPeriodData(true);
+        }
+      }, 30000); // Проверяем каждые 30 секунд
+    }
+
+    // Слушаем изменения видимости страницы
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [settings.backgroundRefresh, settings.enabled, period]);
 
   const periodButtons: { value: TimePeriod; label: string }[] = [
     { value: 7, label: '7 дней' },
@@ -185,7 +300,7 @@ function Analytics() {
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold">Аналитика</h2>
           <Help content="<b>Аналитика</b>: детальная статистика и визуализация данных системы." />
-          {settings.enabled && !loading && !isBackgroundRefresh && getCached(cacheKey) && (
+          {settings.enabled && !loading && !periodLoading && getCached(periodCacheKey) && (
             <span 
               className="text-xs px-2 py-1 rounded-full flex items-center gap-1"
               style={{ 
@@ -199,23 +314,28 @@ function Analytics() {
               Кеш
             </span>
           )}
+          {isBackgroundRefresh && (
+            <span 
+              className="text-xs px-2 py-1 rounded-full flex items-center gap-1"
+              style={{ 
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                color: '#22c55e',
+                border: '1px solid rgba(34, 197, 94, 0.3)',
+              }}
+              title="Обновление данных в фоне"
+            >
+              <RefreshCw className="w-3 h-3 animate-spin" />
+              Обновление
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3">
-          {}
-          <button
-            onClick={() => fetchAllData(true)}
-            disabled={loading}
-            className="btn-icon"
-            title="Обновить данные"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-          {}
           <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: 'var(--theme-card-border)' }}>
             {periodButtons.map((btn) => (
               <button
                 key={btn.value}
                 onClick={() => setPeriod(btn.value)}
+                disabled={periodLoading}
                 className={`px-3 py-1.5 text-sm transition-colors ${
                   period === btn.value 
                     ? 'text-white' 
@@ -224,6 +344,8 @@ function Analytics() {
                 style={{
                   backgroundColor: period === btn.value ? 'var(--theme-primary-color)' : 'var(--theme-card-bg)',
                   color: period === btn.value ? 'white' : 'var(--theme-content-text-muted)',
+                  opacity: periodLoading ? 0.6 : 1,
+                  cursor: periodLoading ? 'wait' : 'pointer',
                 }}
               >
                 {btn.label}
@@ -232,11 +354,11 @@ function Analytics() {
           </div>
           {}
           <button
-            onClick={() => fetchAllData(true)}
-            disabled={loading}
+            onClick={() => fetchPeriodData(true)}
+            disabled={loading || periodLoading}
             className="btn-secondary flex items-center gap-2"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${(loading || periodLoading) ? 'animate-spin' : ''}`} />
             Обновить
           </button>
         </div>

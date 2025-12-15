@@ -94,7 +94,7 @@ function Servers() {
   const handleCreate = async (serverData: Record<string, any>) => {
     try {
       await shm_request('/shm/v1/admin/server', {
-        method: 'POST',
+        method: 'PUT',
         body: JSON.stringify(serverData),
       });
       fetchData(limit, offset, filters, sortField, sortDirection);
@@ -106,7 +106,7 @@ function Servers() {
   const handleSave = async (serverData: Record<string, any>) => {
     try {
       await shm_request('/shm/v1/admin/server', {
-        method: 'PUT',
+        method: 'POST',
         body: JSON.stringify(serverData),
       });
       fetchData(limit, offset, filters, sortField, sortDirection);
@@ -117,7 +117,7 @@ function Servers() {
 
   const handleDelete = async (serverId: number) => {
     try {
-      await shm_request(`/shm/v1/admin/server/${serverId}`, {
+      await shm_request(`/shm/v1/admin/server?server_id=${serverId}`, {
         method: 'DELETE',
       });
       fetchData(limit, offset, filters, sortField, sortDirection);

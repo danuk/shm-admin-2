@@ -121,7 +121,7 @@ export default function IdentityCreateModal({
         <button
           onClick={handleGenerateKey}
           disabled={generating}
-          className="px-4 py-2 rounded flex items-center gap-2 disabled:opacity-50"
+          className="px-4 py-2 rounded flex items-center gap-2 disabled:opacity-50 btn-primary"
           style={{
             backgroundColor: 'var(--theme-button-secondary-bg)',
             color: 'var(--theme-button-secondary-text)',

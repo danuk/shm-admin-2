@@ -5,6 +5,7 @@ import Help from '../components/Help';
 import { shm_request, normalizeListResponse } from '../lib/shm_request';
 import { Plus } from 'lucide-react';
 import { useSelectedUserStore } from '../store/selectedUserStore';
+import { useAutoRefresh } from '../hooks';
 
 const userColumns = [
   { key: 'user_id', label: 'ID', visible: true, sortable: true},
@@ -73,6 +74,13 @@ function Users() {
   useEffect(() => {
     fetchData(limit, offset, filters, sortField, sortDirection);
   }, [limit, offset, filters, sortField, sortDirection]);
+
+  // Автоматическое обновление при активной вкладке
+  useAutoRefresh({
+    onRefresh: () => fetchData(limit, offset, filters, sortField, sortDirection),
+    cacheKey: 'users_list',
+    enabled: true,
+  });
 
   const handlePageChange = (newLimit: number, newOffset: number) => {
     setLimit(newLimit);

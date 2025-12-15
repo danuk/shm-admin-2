@@ -10,7 +10,7 @@ const spoolHistoryColumns = [
   { key: 'user_id', label: 'USER ID', visible: true, sortable: true },
   { key: 'event', label: 'event', visible: true, sortable: true },
   { 
-    key: 'event', 
+    key: 'title', 
     label: 'title', 
     visible: true, 
     sortable: false,
