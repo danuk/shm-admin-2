@@ -62,7 +62,7 @@ export async function fetchMainStats(): Promise<AnalyticsStats> {
     shm_request('/shm/v1/admin/server?limit=1').catch(() => ({ total: 0, items: 0 })),
     shm_request('/shm/v1/admin/user/service?limit=1').catch(() => ({ total: 0, items: 0 })),
     shm_request('/shm/v1/admin/user/pay?limit=1').catch(() => ({ total: 0, items: 0 })),
-    shm_request('/shm/v1/admin/user/withdraw?limit=1').catch(() => ({ total: 0, items: 0 })),
+    shm_request('/shm/v1/admin/user/service/withdraw?limit=1').catch(() => ({ total: 0, items: 0 })),
     shm_request('/shm/v1/admin/spool?limit=1').catch(() => ({ total: 0, items: 0 })),
   ]);
 
@@ -293,7 +293,7 @@ export async function fetchRevenueStats(period: number | 'month' = 30): Promise<
   try {
     const [paysRes, withdrawsRes] = await Promise.all([
       shm_request('/shm/v1/admin/user/pay?limit=1000').catch(() => ({ data: [] })),
-      shm_request('/shm/v1/admin/user/withdraw?limit=1000').catch(() => ({ data: [] })),
+      shm_request('/shm/v1/admin/user/service/withdraw?limit=1000').catch(() => ({ data: [] })),
     ]);
 
     const { data: allPayments } = normalizeListResponse(paysRes);

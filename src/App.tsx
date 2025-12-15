@@ -93,9 +93,7 @@ function App() {
           }
         >
           <Route index element={<Dashboard />} />
-          {}
-          {}
-          {}
+          <Route path="analytics" element={<Analytics />} />
           <Route path="users" element={<Users />} />
           <Route path="profiles" element={<Profiles />} />
           <Route path="user-services" element={<UserServices />} />
@@ -104,23 +102,18 @@ function App() {
           <Route path="bonuses" element={<Bonuses />} />
           <Route path="storage" element={<Storage />} />
           <Route path="promo" element={<Promo />} />
-          {}
           <Route path="services" element={<Services />} />
           <Route path="events" element={<Events />} />
-          {}
           <Route path="servers" element={<Servers />} />
           <Route path="server-groups" element={<ServerGroups />} />
           <Route path="identities" element={<Identities />} />
-          {}
           <Route path="spool" element={<Spool />} />
           <Route path="spool-history" element={<SpoolHistory />} />
-          {}
           <Route path="templates" element={<Templates />} />
           <Route path="config" element={<Config />} />
           <Route path="branding" element={<Branding />} />
           <Route path="appearance" element={<Appearance />} />
           <Route path="cache" element={<CacheSettings />} />
-          {}
         </Route>
       </Routes>
     </BrowserRouter>

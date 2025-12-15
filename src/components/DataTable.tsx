@@ -117,7 +117,7 @@ function DataTable({
   storageKey,
   externalFilters
 }: DataTableProps) {
-  const cacheStore = useCacheStore();
+  const { settings, get: getCached, set: setCache, needsBackgroundRefresh } = useCacheStore();
   const [cachedData, setCachedData] = useState<any[] | null>(null);
   const [isBackgroundRefresh, setIsBackgroundRefresh] = useState(false);
   const backgroundRefreshRef = useRef(false);
@@ -127,16 +127,16 @@ function DataTable({
     : null;
   
   useEffect(() => {
-    if (!cacheKey || !cacheStore.settings.enabled) {
+    if (!cacheKey || !settings.enabled) {
       setCachedData(null);
       return;
     }
     
-    const cached = cacheStore.get(cacheKey);
+    const cached = getCached(cacheKey);
     if (cached) {
       setCachedData(cached);
       
-      if (cacheStore.needsBackgroundRefresh(cacheKey) && !backgroundRefreshRef.current) {
+      if (needsBackgroundRefresh(cacheKey) && !backgroundRefreshRef.current) {
         backgroundRefreshRef.current = true;
         setIsBackgroundRefresh(true);
         onRefresh?.();
@@ -144,11 +144,11 @@ function DataTable({
     } else {
       setCachedData(null);
     }
-  }, [cacheKey, cacheStore]);
+  }, [cacheKey, settings.enabled, getCached, needsBackgroundRefresh, onRefresh]);
   
   useEffect(() => {
-    if (!loading && data && data.length > 0 && cacheKey && cacheStore.settings.enabled) {
-      cacheStore.set(cacheKey, data);
+    if (!loading && data && data.length > 0 && cacheKey && settings.enabled) {
+      setCache(cacheKey, data);
       setCachedData(data);
       
       if (isBackgroundRefresh) {
@@ -156,7 +156,7 @@ function DataTable({
         backgroundRefreshRef.current = false;
       }
     }
-  }, [data, loading, cacheKey, cacheStore, isBackgroundRefresh]);
+  }, [data, loading, cacheKey, setCache, isBackgroundRefresh]);
   
   const displayData = cachedData && !loading ? cachedData : data;
   const isShowingCached = cachedData && !loading && !isBackgroundRefresh;
@@ -465,7 +465,7 @@ function DataTable({
               Фильтры активны
             </span>
           )}
-          {isShowingCached && cacheStore.settings.enabled && (
+          {isShowingCached && settings.enabled && (
             <span 
               className="text-xs px-2 py-1 rounded-full flex items-center gap-1"
               style={{ 

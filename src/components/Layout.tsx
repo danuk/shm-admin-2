@@ -51,6 +51,11 @@ const navigation: MenuItem[] = [
     icon: Home 
   },
   { 
+    name: 'Аналитика', 
+    href: '/analytics', 
+    icon: Home 
+  },
+  { 
     name: 'Пользователи', 
     icon: Users,
     children: [

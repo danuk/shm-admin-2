@@ -16,7 +16,7 @@ interface CacheSettings {
 
 interface CacheState {
   settings: CacheSettings;
-  cache: Map<string, CacheEntry>;
+  cache: Record<string, CacheEntry>;
   
   setSettings: (settings: Partial<CacheSettings>) => void;
   
@@ -51,7 +51,7 @@ export const useCacheStore = create<CacheState>()(
   persist(
     (set, get) => ({
       settings: DEFAULT_SETTINGS,
-      cache: new Map(),
+      cache: {},
       
       setSettings: (newSettings) => {
         set((state) => ({
@@ -66,7 +66,7 @@ export const useCacheStore = create<CacheState>()(
           return null;
         }
         
-        const entry = cache.get(key);
+        const entry = cache[key];
         
         if (!entry) {
           return null;
@@ -74,8 +74,8 @@ export const useCacheStore = create<CacheState>()(
         
         if (Date.now() > entry.expiresAt) {
           set((state) => {
-            const newCache = new Map(state.cache);
-            newCache.delete(key);
+            const newCache = { ...state.cache };
+            delete newCache[key];
             return { cache: newCache };
           });
           return null;
@@ -99,26 +99,26 @@ export const useCacheStore = create<CacheState>()(
         };
         
         set((state) => {
-          const newCache = new Map(state.cache);
-          newCache.set(key, entry);
+          const newCache = { ...state.cache };
+          newCache[key] = entry;
           return { cache: newCache };
         });
       },
       
       remove: (key) => {
         set((state) => {
-          const newCache = new Map(state.cache);
-          newCache.delete(key);
+          const newCache = { ...state.cache };
+          delete newCache[key];
           return { cache: newCache };
         });
       },
       
       clear: () => {
-        set({ cache: new Map() });
+        set({ cache: {} });
       },
       
       isExpired: (key) => {
-        const entry = get().cache.get(key);
+        const entry = get().cache[key];
         if (!entry) return true;
         return Date.now() > entry.expiresAt;
       },
@@ -130,7 +130,7 @@ export const useCacheStore = create<CacheState>()(
           return false;
         }
         
-        const entry = cache.get(key);
+        const entry = cache[key];
         if (!entry) return false;
         
         const age = Date.now() - entry.timestamp;
@@ -143,7 +143,7 @@ export const useCacheStore = create<CacheState>()(
       getStats: () => {
         const { cache } = get();
         
-        const entries = Array.from(cache.entries()).map(([key, entry]) => {
+        const entries = Object.entries(cache).map(([key, entry]) => {
           const now = Date.now();
           const age = now - entry.timestamp;
           const expiresIn = entry.expiresAt - now;
@@ -160,12 +160,16 @@ export const useCacheStore = create<CacheState>()(
         });
         
         const totalSize = entries.reduce((sum, e) => {
-          const bytes = parseInt(e.size);
-          return sum + (isNaN(bytes) ? 0 : bytes);
+          const match = e.size.match(/^([\d.]+)\s*(\w+)$/);
+          if (!match) return sum;
+          const [, num, unit] = match;
+          const value = parseFloat(num);
+          const multiplier = unit === 'KB' ? 1024 : unit === 'MB' ? 1024 * 1024 : unit === 'GB' ? 1024 * 1024 * 1024 : 1;
+          return sum + (value * multiplier);
         }, 0);
         
         return {
-          totalKeys: cache.size,
+          totalKeys: Object.keys(cache).length,
           totalSize: formatBytes(totalSize),
           entries,
         };
