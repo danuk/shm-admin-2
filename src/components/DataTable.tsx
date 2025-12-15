@@ -444,10 +444,11 @@ function DataTable({
 
   return (
     <div 
-      className="rounded-lg overflow-hidden flex flex-col h-full"
+      className="rounded-lg overflow-hidden flex flex-col"
       style={{ 
         backgroundColor: 'var(--theme-card-bg)',
         border: '1px solid var(--theme-card-border)',
+        height: '100%',
       }}
     >
       {}

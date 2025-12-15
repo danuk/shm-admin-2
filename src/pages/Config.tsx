@@ -74,7 +74,7 @@ function Config() {
   };
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex items-center mb-4">
         <h2 className="text-xl font-bold">Конфигурация</h2>
         <Help content="<b>Конфигурация</b>: системные настройки биллинга. Можно редактировать значения через JSON Editor." />

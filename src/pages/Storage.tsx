@@ -82,12 +82,12 @@ function Storage() {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center mb-4">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Хранилище</h2>
         <Help content="<b>Хранилище</b>: данные пользователей, сохраненные в key-value формате." />
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, overflow: 'hidden' }}>
         <DataTable
           columns={storageColumns}
         data={data}
@@ -104,8 +104,9 @@ function Storage() {
         onRefresh={() => fetchData(limit, offset, filters, sortField, sortDirection)}
         storageKey="storage"
         externalFilters={externalFilters}
-        />
+      />
       </div>
+      
       <StorageModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

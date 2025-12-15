@@ -285,6 +285,19 @@ export default function UserSelect({
             onClose={() => setUserModalOpen(false)}
             data={selectedUser}
             onSave={handleSaveUser}
+            onRefresh={async () => {
+              if (value) {
+                lastLoadedUserIdRef.current = null; 
+                const res = await shm_request(`/shm/v1/admin/user?user_id=${value}&limit=1`);
+                const data = res.data || res;
+                const users = Array.isArray(data) ? data : [];
+                if (users.length > 0) {
+                  setSelectedUser(users[0]);
+                  setSearch(formatUser(users[0]));
+                }
+              }
+              onUserUpdated?.();
+            }}
           />
         )}
       </>

@@ -127,7 +127,7 @@ function Spool() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <h2 className="text-xl font-bold">Текущие задачи</h2>
@@ -145,7 +145,7 @@ function Spool() {
           Создать
         </button>
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, overflow: 'hidden' }}>
         <DataTable
           columns={spoolColumns}
         data={data}
@@ -163,6 +163,7 @@ function Spool() {
         storageKey="spool"
         externalFilters={externalFilters}
       />
+      </div>
       
       {}
       <SpoolModal

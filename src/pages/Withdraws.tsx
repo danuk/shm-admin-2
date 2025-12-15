@@ -90,14 +90,14 @@ function Withdraws() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <h2 className="text-xl font-bold">Списания</h2>
-        <Help content="<b>Списания</b>: история списаний средств с баланса пользователей." />
+          <Help content="<b>Списания</b>: история списаний средств с баланса пользователей." />
         </div>
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, overflow: 'hidden' }}>
         <DataTable
           columns={withdrawColumns}
         data={data}
@@ -116,6 +116,7 @@ function Withdraws() {
         externalFilters={externalFilters}
         />
       </div>
+      
       <WithdrawModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

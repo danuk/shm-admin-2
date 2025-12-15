@@ -13,6 +13,7 @@ import {
   X 
 } from 'lucide-react';
 import { useSelectedUserStore } from '../store/selectedUserStore';
+import { shm_request } from '../lib/shm_request';
 import { UserModal } from '../modals';
 
 export default function SelectedUserDropdown() {
@@ -212,6 +213,15 @@ export default function SelectedUserDropdown() {
         data={selectedUser}
         onSave={async () => {
           setUserModalOpen(false);
+        }}
+        onRefresh={async () => {
+          if (selectedUser?.user_id) {
+            const userData = await shm_request(`/shm/v1/admin/user?user_id=${selectedUser.user_id}`);
+            if (userData.user) {
+              const { setSelectedUser } = useSelectedUserStore.getState();
+              setSelectedUser(userData.user);
+            }
+          }
         }}
       />
     </>

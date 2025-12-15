@@ -85,7 +85,7 @@ function Pays() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <h2 className="text-xl font-bold">Платежи</h2>
@@ -104,7 +104,7 @@ function Pays() {
           Добавить
         </button>
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, overflow: 'hidden' }}>
         <DataTable
           columns={payColumns}
           data={data}
@@ -119,10 +119,11 @@ function Pays() {
           sortDirection={sortDirection}
           onRowClick={handleRowClick}
           onRefresh={() => fetchData(limit, offset, filters, sortField, sortDirection)}
-          storageKey="pays"
-          externalFilters={externalFilters}
-        />
+        storageKey="pays"
+        externalFilters={externalFilters}
+      />
       </div>
+      
       <PayModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

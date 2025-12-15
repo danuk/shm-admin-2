@@ -84,7 +84,7 @@ function Bonuses() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <h2 className="text-xl font-bold">Бонусы</h2>
@@ -103,7 +103,7 @@ function Bonuses() {
           Добавить
         </button>
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, overflow: 'hidden' }}>
         <DataTable
           columns={bonusColumns}
         data={data}
@@ -120,8 +120,9 @@ function Bonuses() {
         onRefresh={() => fetchData(limit, offset, filters, sortField, sortDirection)}
         storageKey="bonuses"
         externalFilters={externalFilters}
-        />
+      />
       </div>
+      
       <BonusModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

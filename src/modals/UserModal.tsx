@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import JsonEditor from '../components/JsonEditor';
 import PayCreateModal from './PayCreateModal';
 import BonusCreateModal from './BonusCreateModal';
+import { shm_request } from '../lib/shm_request';
 
 interface UserModalProps {
   open: boolean;
@@ -14,6 +15,7 @@ interface UserModalProps {
   onSave: (data: Record<string, any>) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
   onChangePassword?: () => void;
+  onRefresh?: () => void | Promise<void>;
 }
 
 export default function UserModal({
@@ -23,6 +25,7 @@ export default function UserModal({
   onSave,
   onDelete,
   onChangePassword,
+  onRefresh,
 }: UserModalProps) {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [saving, setSaving] = useState(false);
@@ -32,9 +35,9 @@ export default function UserModal({
   const [bonusModalOpen, setBonusModalOpen] = useState(false);
 
   useEffect(() => {
-    if (data) {
+    if (open && data) {
       setFormData({ ...data });
-    } else {
+    } else if (!open) {
       setFormData({});
     }
   }, [data, open]);
@@ -393,6 +396,18 @@ export default function UserModal({
         open={payModalOpen}
         onClose={() => setPayModalOpen(false)}
         onSave={async (payData) => {
+          const dataWithUser = { ...payData, user_id: formData.user_id };
+          await shm_request('/shm/v1/admin/user/pay', {
+            method: 'PUT',
+            body: JSON.stringify(dataWithUser),
+          });
+          
+          setPayModalOpen(false);
+          
+          // Обновляем данные в родительском компоненте
+          if (onRefresh) {
+            await onRefresh();
+          }
         }}
       />
 
@@ -400,6 +415,18 @@ export default function UserModal({
         open={bonusModalOpen}
         onClose={() => setBonusModalOpen(false)}
         onSave={async (bonusData) => {
+          const dataWithUser = { ...bonusData, user_id: formData.user_id };
+          await shm_request('/shm/v1/admin/user/bonus', {
+            method: 'PUT',
+            body: JSON.stringify(dataWithUser),
+          });
+          
+          setBonusModalOpen(false);
+          
+          // Обновляем данные в родительском компоненте
+          if (onRefresh) {
+            await onRefresh();
+          }
         }}
       />
     </Modal>

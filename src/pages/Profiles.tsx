@@ -108,7 +108,7 @@ function Profiles() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <h2 className="text-xl font-bold">Персональные данные</h2>
@@ -126,7 +126,7 @@ function Profiles() {
           Добавить
         </button>
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, overflow: 'hidden' }}>
         <DataTable
           columns={profileColumns}
         data={data}
@@ -143,8 +143,9 @@ function Profiles() {
         onRefresh={() => fetchData(limit, offset, filters, sortField, sortDirection)}
         storageKey="profiles"
         externalFilters={externalFilters}
-        />
+      />
       </div>
+      
       <ProfileModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

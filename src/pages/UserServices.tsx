@@ -160,7 +160,7 @@ function UserServices() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <h2 className="text-xl font-bold">Услуги пользователей</h2>
@@ -178,7 +178,7 @@ function UserServices() {
           Добавить
         </button>
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, overflow: 'hidden' }}>
         <DataTable
           columns={userServiceColumns}
         data={data}
@@ -196,6 +196,7 @@ function UserServices() {
         storageKey="user-services"
         externalFilters={externalFilters}
       />
+      </div>
       
       {}
       <UserServiceModal

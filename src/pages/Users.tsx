@@ -137,7 +137,7 @@ function Users() {
   };
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <h2 className="text-xl font-bold">Пользователи</h2>
@@ -180,6 +180,7 @@ function Users() {
         onSave={handleSaveEdit}
         onDelete={handleDelete}
         onChangePassword={handleChangePasswordOpen}
+        onRefresh={() => fetchData(limit, offset, filters, sortField, sortDirection)}
       />
 
       {}
