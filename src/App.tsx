@@ -93,7 +93,7 @@ function App() {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="analytics" element={<Analytics />} />
+          {/* <Route path="analytics" element={<Analytics />} /> */}
           <Route path="users" element={<Users />} />
           <Route path="profiles" element={<Profiles />} />
           <Route path="user-services" element={<UserServices />} />

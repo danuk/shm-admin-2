@@ -7,7 +7,6 @@ import {
   Server,
   CreditCard,
   Activity,
-  Calendar,
   ArrowDownRight,
   BarChart3,
   RefreshCw,
@@ -16,7 +15,6 @@ import {
   UserCheck,
   Crown,
   Repeat,
-  Download,
   ShoppingCart,
   Zap,
   PieChart,
@@ -37,7 +35,6 @@ import {
   TaskStats,
   TopService,
   ServerStats,
-  AnalyticsData,
 } from '../lib/analyticsApi';
 import { format } from 'date-fns';
 
@@ -60,7 +57,6 @@ function Analytics() {
   const [topCustomers, setTopCustomers] = useState<TopCustomer[]>([]);
   const [mrrStats, setMrrStats] = useState<MRRStats | null>(null);
 
-  // Загрузка всех данных за период (теперь один запрос вместо множества)
   const fetchAllData = async (forceRefresh = false) => {
     const cacheKey = `analytics_${period}`;
     
@@ -84,7 +80,6 @@ function Analytics() {
     try {
       const analytics = await fetchAnalytics(period);
       
-      // Форматируем timeline для отображения
       const paymentStats: PaymentStats = {
         ...analytics.payments,
         timeline: analytics.payments.timeline.map(t => ({
@@ -153,9 +148,6 @@ function Analytics() {
     }
   };
 
-
-
-  // Начальная загрузка (при монтировании)
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
@@ -166,13 +158,11 @@ function Analytics() {
     loadInitialData();
   }, []);
 
-  // Обновление при изменении периода
   useEffect(() => {
     setPeriodLoading(true);
     fetchAllData(false).finally(() => setPeriodLoading(false));
   }, [period]);
 
-  // Автоматическое обновление при активной вкладке
   useEffect(() => {
     if (!settings.backgroundRefresh || !settings.enabled) return;
 
@@ -184,15 +174,13 @@ function Analytics() {
       const cacheKey = `analytics_${period}`;
       
       if (isVisible && settings.backgroundRefresh) {
-        // Вкладка стала активной - проверяем кеш и запускаем интервал
         if (needsBackgroundRefresh(cacheKey)) {
           fetchAllData(true);
         }
         
-        // Запускаем периодическое обновление (проверка каждые 10 секунд)
         if (intervalId) clearInterval(intervalId);
         intervalId = window.setInterval(() => {
-          if (document.hidden) return; // Двойная проверка
+          if (document.hidden) return;
           
           if (needsBackgroundRefresh(cacheKey)) {
             setIsBackgroundRefresh(true);
@@ -200,15 +188,13 @@ function Analytics() {
               setIsBackgroundRefresh(false);
             });
           }
-        }, 10000); // Проверяем каждые 10 секунд
+        }, 10000);
       } else if (intervalId) {
-        // Вкладка стала неактивной - останавливаем обновление
         clearInterval(intervalId);
         intervalId = null;
       }
     };
 
-    // Проверяем начальное состояние и запускаем интервал если вкладка активна
     if (!document.hidden) {
       const cacheKey = `analytics_${period}`;
       intervalId = window.setInterval(() => {
@@ -220,10 +206,9 @@ function Analytics() {
             setIsBackgroundRefresh(false);
           });
         }
-      }, 30000); // Проверяем каждые 30 секунд
+      }, 10000);
     }
 
-    // Слушаем изменения видимости страницы
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
