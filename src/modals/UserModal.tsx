@@ -411,14 +411,12 @@ export default function UserModal({
         onClose={() => setPayModalOpen(false)}
         onSave={async (payData) => {
           const dataWithUser = { ...payData, user_id: formData.user_id };
-          await shm_request('/shm/v1/admin/user/pay', {
+          await shm_request('/shm/v1/admin/user/payment', {
             method: 'PUT',
             body: JSON.stringify(dataWithUser),
           });
           
           setPayModalOpen(false);
-          
-          // Обновляем данные в родительском компоненте
           if (onRefresh) {
             await onRefresh();
           }
@@ -436,8 +434,6 @@ export default function UserModal({
           });
           
           setBonusModalOpen(false);
-          
-          // Обновляем данные в родительском компоненте
           if (onRefresh) {
             await onRefresh();
           }

@@ -133,7 +133,7 @@ function Pays() {
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onSave={async (data) => {
-          await shm_request(`/shm/v1/admin/user/pay`, {
+          await shm_request(`/shm/v1/admin/user/payment`, {
             method: 'PUT',
             body: JSON.stringify(data),
           });

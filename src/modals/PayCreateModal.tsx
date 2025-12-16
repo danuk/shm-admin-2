@@ -20,8 +20,8 @@ export default function PayCreateModal({
   const [formData, setFormData] = useState<Record<string, any>>({
     user_id: null,
     pay_system_id: '',
-    money: '',
-    comment: null,
+    money: null,
+    comment: '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -30,8 +30,8 @@ export default function PayCreateModal({
       setFormData({
         user_id: selectedUser?.user_id || null,
         pay_system_id: '',
-        money: '',
-        comment: null,
+        money: null,
+        comment: '',
       });
     }
   }, [open, selectedUser]);
@@ -56,7 +56,15 @@ export default function PayCreateModal({
 
     setSaving(true);
     try {
-      await onSave(formData);
+      const payload: any = {
+        ...formData,
+        money: Number(formData.money),
+      };
+      if (!formData.comment?.text?.trim()) {
+        delete payload.comment;
+      }
+      
+      await onSave(payload);
       onClose();
       toast.success('Платёж создан');
     } catch (error) {
