@@ -594,6 +594,43 @@ export default function TemplateModal({
     </div>
   );
 
+  // Keyboard shortcut for saving (Ctrl+S)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 's') {
+        event.preventDefault();
+        
+        // Проверяем, есть ли активная вкладка
+        if (!activeTabId) {
+          toast.error('Выберите шаблон для сохранения');
+          return;
+        }
+        
+        // Получаем данные текущей активной вкладки
+        const activeTab = tabs.find(t => t.id === activeTabId);
+        if (!activeTab) {
+          toast.error('Шаблон не найден');
+          return;
+        }
+        
+        // Для существующих шаблонов проверяем наличие ID
+        const currentTemplate = activeTab.template;
+        if (currentTemplate.is_add !== 1 && !currentTemplate.id && !formData.id) {
+          toast.error('Введите ID шаблона');
+          return;
+        }
+        
+        handleSave();
+      }
+    };
+
+    // Only add listener when modal is open in any state
+    if (open || isFullscreen || isMinimized) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [open, isFullscreen, isMinimized, activeTabId, formData.id, tabs]);
+
   if (isMinimized && tabs.length > 0) {
     const hasUnsaved = tabs.some(t => t.hasUnsavedChanges);
     return (
