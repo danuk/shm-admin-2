@@ -38,6 +38,7 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
       usersNewRes,
       servicesRes,
       userServicesNewRes,
+      serversCountRes,
       paymentsRes,
       withdrawsRes,
     ] = await Promise.all([
@@ -45,6 +46,7 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
       shm_request(`/shm/v1/admin/user?start=${start}&stop=${stop}&field=created&limit=9999`),
       shm_request('/shm/v1/admin/service?limit=9999'),
       shm_request(`/shm/v1/admin/user/service?start=${start}&stop=${stop}&field=created&limit=5000`),
+      shm_request('/shm/v1/admin/server?limit=1'),
       shm_request(`/shm/v1/admin/user/pay?start=${start}&stop=${stop}&field=date&limit=9999`),
       shm_request(`/shm/v1/admin/user/service/withdraw?start=${start}&stop=${stop}&field=create_date&limit=9999`),
     ]);
@@ -54,6 +56,7 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
     const usersNew = normalizeListResponse(usersNewRes).data;
     const services = normalizeListResponse(servicesRes).data;
     const userServicesNew = normalizeListResponse(userServicesNewRes).data;
+    const totalServersCount = serversCountRes.items || serversCountRes.total || 0;
     const payments = normalizeListResponse(paymentsRes).data;
     const withdraws = normalizeListResponse(withdrawsRes).data;
     
@@ -87,7 +90,7 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
       counts: {
         totalUsers: totalUsersCount,
         activeUserServices: activeUserServices,
-        totalServers: 0,
+        totalServers: totalServersCount,
       },
       payments: {
         timeline: Object.entries(paymentsByDate).map(([date, value]) => ({ date, value })),
