@@ -102,10 +102,11 @@ export default function TemplateTestModal({
       open={open}
       onClose={handleClose}
       title="Тест шаблона"
-      size="xl"
+      size="lg"
+      resizable={true}
       footer={renderFooter()}
     >
-      <div className="space-y-4">
+      <div className="space-y-4 flex flex-col h-full">
         {}
         <div className="flex items-center gap-3">
           <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
@@ -156,24 +157,22 @@ export default function TemplateTestModal({
         </div>
 
         {}
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 flex-1 min-h-0">
           <label className="w-32 text-sm font-medium shrink-0 pt-2" style={labelStyles}>
             Результат
           </label>
-          <div className="flex-1">
-            <textarea
-              value={renderResult}
-              readOnly
-              rows={14}
-              className="w-full px-3 py-2 text-sm rounded border font-mono"
-              style={{ ...inputStyles, resize: 'both', overflow: 'auto', maxWidth: '100%' }}
-              placeholder="Результат рендера появится здесь..."
-            />
-          </div>
+          <textarea
+            value={renderResult}
+            readOnly
+            className="flex-1 h-full px-3 py-2 text-sm rounded border font-mono"
+            style={{ ...inputStyles, resize: 'none', minHeight: 280 }}
+            placeholder="Результат рендера появится здесь..."
+          />
         </div>
       </div>
     </Modal>
   );
 }
+
 
 

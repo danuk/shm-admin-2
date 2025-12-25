@@ -4,6 +4,7 @@ import { Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Editor from '@monaco-editor/react';
 import JsonEditor from '../components/JsonEditor';
+import { registerTTCompletion } from '../lib/ttMonaco';
 
 interface TemplateCreateModalProps {
   open: boolean;
@@ -176,8 +177,9 @@ export default function TemplateCreateModal({
                 lineNumbers: 'on',
                 folding: true,
               }}
-              onMount={(editor) => {
+              onMount={(editor, monaco) => {
                 editorRef.current = editor;
+                registerTTCompletion(monaco);
               }}
             />
           </div>

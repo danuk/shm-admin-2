@@ -10,6 +10,7 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   closeOnBackdrop?: boolean;
   closeOnEsc?: boolean;
+  resizable?: boolean;
 }
 
 const sizeClasses: Record<string, string> = {
@@ -29,6 +30,7 @@ function Modal({
   size = 'lg',
   closeOnBackdrop = true,
   closeOnEsc = true,
+  resizable = false,
 }: ModalProps) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -68,6 +70,7 @@ function Modal({
           border: '1px solid var(--theme-card-border)',
           maxHeight: 'calc(100vh - 5rem)',
           display: 'flex',
+          resize: resizable ? 'both' : undefined,
           flexDirection: 'column',
         }}
       >
@@ -122,3 +125,4 @@ function Modal({
 }
 
 export default Modal;
+

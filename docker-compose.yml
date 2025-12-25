@@ -1,7 +1,7 @@
 services:
   admin-2:
     build: .
-    image: "zakachkin/shm-admin-2:latest"
+    image: "zakachkin/shm-admin-2:dev"
     pull_policy: always
     restart: always
     environment:

@@ -33,29 +33,31 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
     console.log(`[Dashboard] Fetching data for period: ${start} to ${stop}`);
     
     // Параллельные запросы к API - только данные за период
-    const [
-      usersCountRes,
-      usersNewRes,
-      servicesRes,
-      userServicesNewRes,
-      paymentsRes,
-      withdrawsRes,
-    ] = await Promise.all([
-      shm_request('/shm/v1/admin/user?limit=1'), // items покажет общее количество
+    const results = await Promise.allSettled([
+      shm_request('/shm/v1/admin/user?limit=1'),
       shm_request(`/shm/v1/admin/user?start=${start}&stop=${stop}&field=created&limit=9999`),
-      shm_request('/shm/v1/admin/service?limit=9999'),
       shm_request(`/shm/v1/admin/user/service?start=${start}&stop=${stop}&field=created&limit=5000`),
+      shm_request('/shm/v1/admin/server?limit=1'),
       shm_request(`/shm/v1/admin/user/pay?start=${start}&stop=${stop}&field=date&limit=9999`),
       shm_request(`/shm/v1/admin/user/service/withdraw?start=${start}&stop=${stop}&field=create_date&limit=9999`),
     ]);
+
+    const [
+      usersCountRes,
+      usersNewRes,
+      userServicesNewRes,
+      serversCountRes,
+      paymentsRes,
+      withdrawsRes,
+    ] = results.map((result) => (result.status === 'fulfilled' ? result.value : null));
     
     // Нормализация данных
-    const totalUsersCount = usersCountRes.items || usersCountRes.total || 0;
-    const usersNew = normalizeListResponse(usersNewRes).data;
-    const services = normalizeListResponse(servicesRes).data;
-    const userServicesNew = normalizeListResponse(userServicesNewRes).data;
-    const payments = normalizeListResponse(paymentsRes).data;
-    const withdraws = normalizeListResponse(withdrawsRes).data;
+    const totalUsersCount = usersCountRes?.items || usersCountRes?.total || 0;
+    const usersNew = usersNewRes ? normalizeListResponse(usersNewRes).data : [];
+    const userServicesNew = userServicesNewRes ? normalizeListResponse(userServicesNewRes).data : [];
+    const totalServersCount = serversCountRes?.items || serversCountRes?.total || 0;
+    const payments = paymentsRes ? normalizeListResponse(paymentsRes).data : [];
+    const withdraws = withdrawsRes ? normalizeListResponse(withdrawsRes).data : [];
     
     // Фильтрация "реальных" платежей (без manual)
     const realPayments = payments.filter((p: any) => 
@@ -87,7 +89,7 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
       counts: {
         totalUsers: totalUsersCount,
         activeUserServices: activeUserServices,
-        totalServers: 0,
+        totalServers: totalServersCount,
       },
       payments: {
         timeline: Object.entries(paymentsByDate).map(([date, value]) => ({ date, value })),
@@ -110,6 +112,7 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
     throw error;
   }
 }
+
 
 
 
