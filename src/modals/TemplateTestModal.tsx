@@ -164,7 +164,6 @@ export default function TemplateTestModal({
           <textarea
             value={renderResult}
             readOnly
-            rows={14}
             className="flex-1 h-full px-3 py-2 text-sm rounded border font-mono"
             style={inputStyles}
               placeholder="Результат рендера появится здесь..."
