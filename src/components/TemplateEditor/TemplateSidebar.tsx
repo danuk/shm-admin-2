@@ -77,6 +77,9 @@ export default function TemplateSidebar({
   const filteredTemplates = templates.filter((template) =>
     template.id.toLowerCase().includes(search.toLowerCase())
   );
+  const sortedTemplates = [...filteredTemplates].sort((a, b) =>
+    String(a.id).localeCompare(String(b.id), undefined, { sensitivity: 'variant' })
+  );
 
   const handleTemplateClick = (template: Template) => {
     onTemplateSelect(template);
@@ -145,7 +148,7 @@ export default function TemplateSidebar({
           </div>
         ) : (
           <div className="py-1">
-            {filteredTemplates.map((template) => {
+            {sortedTemplates.map((template) => {
               const isActive = activeTemplateId === template.id;
 
               return (
