@@ -21,3 +21,4 @@ src/version
 .temp
 build.sh
 build.ps1
+/.github
