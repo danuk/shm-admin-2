@@ -24,13 +24,14 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000,
   },
-  server: {
-    proxy: {
-      '/shm': {
-        target: 'https://shm-api.bkcloud.ru',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
+  // Uncomment and configure the server proxy if needed
+  // server: {
+  //   proxy: {
+  //     '/shm': {
+  //       target: 'https://YOUR_DOMAIN.ru',
+  //       changeOrigin: true,
+  //       secure: false,
+  //     },
+  //   },
+  // },
 });
