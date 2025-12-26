@@ -22,5 +22,18 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 1000,
-  }
+  },
+  server: {
+    proxy: {
+      '/shm': {
+        target: 'https://shm.bkcloud.ru',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
+  },
 });

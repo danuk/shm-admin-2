@@ -101,13 +101,9 @@ const navigation: MenuItem[] = [
     ]
   },
   { 
-    name: 'Другие настройки', 
-    icon: Wrench,
-    children: [
-      { name: 'Брендинг', href: '/branding' },
-      { name: 'Внешний вид', href: '/appearance' },
-      { name: 'Кеширование', href: '/cache' },
-    ]
+    name: 'Настройки системы', 
+    href: '/settings',
+    icon: Wrench
   },
 ];
 

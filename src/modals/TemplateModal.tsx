@@ -32,7 +32,9 @@ export default function TemplateModal({
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editorLanguage, setEditorLanguage] = useState('plaintext');
+  const [enableTTSnippetsInOtherLanguages, setEnableTTSnippetsInOtherLanguages] = useState(false);
   const editorRef = useRef<any>(null);
+  const monacoRef = useRef<any>(null);
   const { resolvedTheme } = useThemeStore();
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -175,6 +177,14 @@ export default function TemplateModal({
       setActiveTabId(newTab.id);
     }
   }, [open, data?.id]);
+
+  // Перерегистрация TT сниппетов при изменении настройки
+  useEffect(() => {
+    if (monacoRef.current) {
+      registerTTCompletion(monacoRef.current, enableTTSnippetsInOtherLanguages);
+    }
+  }, [enableTTSnippetsInOtherLanguages]);
+  
   useEffect(() => {
     if (!activeTabId) return;
     const activeTab = tabs.find(t => t.id === activeTabId);
@@ -210,7 +220,7 @@ export default function TemplateModal({
         setTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, template: templateData } : t));
       })
       .catch(() => {
-        toast.error('�� ������� ��������� ������');
+        toast.error('�� ������� ��������� ������');
       })
       .finally(() => setLoading(false));
   }, [activeTabId, tabs]);
@@ -244,7 +254,7 @@ export default function TemplateModal({
       content.includes('<%') || content.includes('%>') ||
       content.includes('{{') || content.includes('}}')
     ) {
-      setEditorLanguage('html'); 
+      setEditorLanguage('tt'); 
     } else if (
       content.includes('<html') || content.includes('<!DOCTYPE') ||
       content.includes('<head>') || content.includes('<body>')
@@ -900,6 +910,25 @@ export default function TemplateModal({
                         AUTO
                       </button>
                     </div>
+                    
+                    {/* Переключатель сниппетов Template Toolkit для полноэкранного режима */}
+                    {editorLanguage !== 'tt' && (
+                      <label className="flex items-center gap-2 cursor-pointer ml-4">
+                        <input
+                          type="checkbox"
+                          checked={enableTTSnippetsInOtherLanguages}
+                          onChange={(e) => setEnableTTSnippetsInOtherLanguages(e.target.checked)}
+                          className="rounded border"
+                          style={{
+                            backgroundColor: 'var(--theme-input-bg)',
+                            borderColor: 'var(--theme-input-border)',
+                          }}
+                        />
+                        <span className="text-sm" style={{ color: 'var(--theme-content-text-muted)' }}>
+                          TT сниппеты
+                        </span>
+                      </label>
+                    )}
                   </div>
 
                   {}
@@ -910,7 +939,7 @@ export default function TemplateModal({
                         language={editorLanguage}
                         value={formData.data || ''}
                         onChange={handleEditorChange}
-                        theme={resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light'}
+                        theme={editorLanguage === 'tt' ? (resolvedTheme === 'dark' ? 'tt-dark' : 'tt-light') : (resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light')}
                         options={{
                           fontSize: 14,
                           tabSize: 2,
@@ -924,7 +953,8 @@ export default function TemplateModal({
                         }}
                         onMount={(editor, monaco) => {
                           editorRef.current = editor;
-                          registerTTCompletion(monaco);
+                          monacoRef.current = monaco;
+                          registerTTCompletion(monaco, enableTTSnippetsInOtherLanguages);
                         }}
                       />
                     </div>
@@ -995,7 +1025,7 @@ export default function TemplateModal({
               Язык
             </label>
             <div className="flex gap-1 flex-wrap">
-              {['plaintext', 'json', 'html', 'shell', 'perl', 'javascript'].map(lang => (
+              {['plaintext', 'json', 'html', 'shell', 'perl', 'javascript', 'tt'].map(lang => (
                 <button
                   key={lang}
                   onClick={() => setEditorLanguage(lang)}
@@ -1026,6 +1056,30 @@ export default function TemplateModal({
             </div>
           </div>
 
+          {/* Переключатель сниппетов Template Toolkit */}
+          {editorLanguage !== 'tt' && (
+            <div className="flex items-center gap-2">
+              <label className="w-24 text-sm font-medium shrink-0" style={labelStyles}>
+                TT Сниппеты
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={enableTTSnippetsInOtherLanguages}
+                  onChange={(e) => setEnableTTSnippetsInOtherLanguages(e.target.checked)}
+                  className="rounded border"
+                  style={{
+                    backgroundColor: 'var(--theme-input-bg)',
+                    borderColor: 'var(--theme-input-border)',
+                  }}
+                />
+                <span className="text-sm" style={{ color: 'var(--theme-content-text-muted)' }}>
+                  Включить Template Toolkit сниппеты для этого языка
+                </span>
+              </label>
+            </div>
+          )}
+
           {}
           <div className="flex items-start gap-3">
             <label className="w-24 text-sm font-medium shrink-0 pt-2" style={labelStyles}>
@@ -1037,7 +1091,7 @@ export default function TemplateModal({
                 language={editorLanguage}
                 value={formData.data || ''}
                 onChange={handleEditorChange}
-                theme={resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light'}
+                theme={editorLanguage === 'tt' ? (resolvedTheme === 'dark' ? 'tt-dark' : 'tt-light') : (resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light')}
                 options={{
                   fontSize: 14,
                   tabSize: 2,
@@ -1051,7 +1105,8 @@ export default function TemplateModal({
                 }}
                 onMount={(editor, monaco) => {
                   editorRef.current = editor;
-                  registerTTCompletion(monaco);
+                  monacoRef.current = monaco;
+                  registerTTCompletion(monaco, enableTTSnippetsInOtherLanguages);
                 }}
               />
             </div>
