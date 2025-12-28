@@ -13,7 +13,6 @@ import Spool from './pages/Spool';
 import Pays from './pages/Pays';
 import Servers from './pages/Servers';
 import Templates from './pages/Templates';
-import Config from './pages/Config';
 import Promo from './pages/Promo';
 import Dashboard from './pages/Dashboard';
 import Profiles from './pages/Profiles';
@@ -28,6 +27,7 @@ import SHMCloud from './pages/SHMCloud';
 import Subscription from './pages/Subscription';
 import PaymentSystems from './pages/PaymentSystems';
 import CurrencyConverter from './pages/CurrencyConverter';
+import ConfigurationTabs from './pages/ConfigurationTabs';
 import NotFound from './pages/NotFound';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -112,12 +112,12 @@ function App() {
           <Route path="spool" element={<Spool />} />
           <Route path="spool-history" element={<SpoolHistory />} />
           <Route path="templates" element={<Templates />} />
-          <Route path="config" element={<Config />} />
           <Route path="settings" element={<UnifiedSettings />} />
           <Route path="cloud" element={<SHMCloud />} />
           <Route path="subscription" element={<Subscription />} />
           <Route path="payment-systems" element={<PaymentSystems />} />
           <Route path="currency-converter" element={<CurrencyConverter />} />
+          <Route path="configuration" element={<ConfigurationTabs />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

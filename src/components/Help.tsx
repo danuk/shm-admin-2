@@ -42,7 +42,7 @@ function Help({ content }: HelpProps) {
           />
           {}
           <div
-            className="fixed top-0 right-0 w-96 h-full shadow-2xl z-50 overflow-auto"
+            className="fixed top-0 right-0 w-[600px] h-full shadow-2xl z-50 overflow-auto"
             style={{
               backgroundColor: 'var(--theme-card-bg)',
               borderLeft: '1px solid var(--theme-card-border)',
@@ -72,7 +72,7 @@ function Help({ content }: HelpProps) {
             </div>
             <div
               className="p-4 prose prose-sm max-w-none"
-              style={{ color: 'var(--theme-content-text)' }}
+              style={{ color: 'var(--theme-content-text)', whiteSpace: 'pre-line' }}
               dangerouslySetInnerHTML={{ __html: content }}
             />
           </div>

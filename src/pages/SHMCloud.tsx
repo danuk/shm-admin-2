@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Cloud, LogIn, LogOut, UserPlus, Plus, Check, X, ShoppingCart, CreditCard, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { Cloud, LogIn, LogOut, UserPlus, Plus, Check, X, ShoppingCart, CreditCard, FileText, CheckCircle, XCircle, Settings } from 'lucide-react';
 import { shm_request } from '../lib/shm_request';
 import toast from 'react-hot-toast';
 import { ShmCloudPaymentModal } from '../modals/ShmCloudPaymentModal';

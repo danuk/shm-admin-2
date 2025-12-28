@@ -25,13 +25,13 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
   },
   // Uncomment and configure the server proxy if needed
-  // server: {
-  //   proxy: {
-  //     '/shm': {
-  //       target: 'http://localhost:8081',
-  //       changeOrigin: true,
-  //       secure: false,
-  //     },
-  //   },
-  // },
+  server: {
+    proxy: {
+      '/shm': {
+        target: 'https://shm-api.bkcloud.ru',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });

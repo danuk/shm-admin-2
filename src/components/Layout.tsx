@@ -97,7 +97,7 @@ const navigation: MenuItem[] = [
     icon: Settings,
     children: [
       { name: 'Шаблоны', href: '/templates' },
-      { name: 'Конфигурация', href: '/config' },
+      { name: 'Конфигурация', href: '/configuration' },
     ]
   },
   {
@@ -209,7 +209,7 @@ function Layout() {
   }, [fetchBranding, applyTheme]);
 
   useEffect(() => {
-    document.title = branding.appTitle || branding.appName;
+    document.title = branding.name;
   }, [branding]);
 
   const handleLogout = () => {
@@ -319,7 +319,7 @@ function Layout() {
                 </div>
               )}
               <span className="text-lg font-bold" style={{ color: 'var(--theme-header-text)' }}>
-                {branding.appName}
+                {branding.name}
               </span>
             </Link>
             <button

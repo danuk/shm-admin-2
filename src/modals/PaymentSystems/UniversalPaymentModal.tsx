@@ -120,19 +120,35 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
         formFields[key] = value;
       });
 
+      // Валидация lifetime для wata (10-43200 минут)
+      if (system.name === 'wata' && formFields.lifetime) {
+        const lifetime = Number(formFields.lifetime);
+        if (lifetime < 10 || lifetime > 43200) {
+          toast.error('Lifetime должен быть от 10 до 43200 минут');
+          return;
+        }
+      }
+
       try {
         // Получаем текущие настройки платежных систем
         const configResponse = await shm_request('shm/v1/admin/config/pay_systems');
         const currentConfig = configResponse.data?.[0] || {};
 
+        // Подготовка данных для сохранения
+        const systemConfig: any = {
+          ...formFields,
+          name: formFields.name || system.title,
+          show_for_client: formFields.show_for_client === 'true' || formFields.show_for_client === true,
+        };
+
+        // Преобразуем числовые поля
+        if (formFields.weight) systemConfig.weight = Number(formFields.weight);
+        if (formFields.lifetime) systemConfig.lifetime = Number(formFields.lifetime);
+
         // Добавляем/обновляем настройки для текущей платежной системы
         const updatedConfig = {
           ...currentConfig,
-          [system.name]: {
-            ...formFields,
-            name: system.title,
-            show_for_client: formFields.show_for_client === 'true' || formFields.show_for_client === true,
-          }
+          [system.name]: systemConfig
         };
 
         // Сохраняем обновленную конфигурацию

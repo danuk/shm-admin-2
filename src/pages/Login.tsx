@@ -68,14 +68,8 @@ function Login() {
             className="mt-6 text-center text-3xl font-extrabold"
             style={{ color: 'var(--theme-content-text)' }}
           >
-            {branding.appTitle}
+            {branding.name}
           </h2>
-          <p
-            className="mt-2 text-center text-sm"
-            style={{ color: 'var(--theme-content-text-muted)' }}
-          >
-            {branding.loginSubtitle}
-          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md space-y-4">
