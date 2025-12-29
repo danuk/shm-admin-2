@@ -209,9 +209,8 @@ function Subscription() {
   const getStatusText = (status: string) => {
     const statusMap: Record<string, string> = {
       'ACTIVE': 'Активно',
-      'PROGRESS': 'В2 процессе',
+      'PROGRESS': 'В процессе',
       'NOT PAID': 'Не оплачено',
-      'NOT_PAID': 'Не оплачено',
     };
     return statusMap[status] || status;
   };
@@ -220,7 +219,7 @@ function Subscription() {
   const getStatusColor = (status: string) => {
     if (status === 'ACTIVE') return 'var(--accent-success)';
     if (status === 'PROGRESS') return 'var(--accent-warning)';
-    if (status === 'NOT PAID' || status === 'NOT_PAID') return 'var(--accent-danger)';
+    if (status === 'NOT PAID') return 'var(--accent-primary)';
     return 'var(--theme-content-text-muted)';
   };
 
