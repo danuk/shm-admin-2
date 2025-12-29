@@ -10,6 +10,7 @@ export interface PaymentSystem {
   description: string;
   infoMessage?: string;
   price?: number;
+  paid?: boolean;
   fields: PaymentFieldSchema[];
 }
 
@@ -22,6 +23,7 @@ interface UniversalPaymentModalProps {
 export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ open, onClose, system }) => {
   const [loading, setLoading] = useState(false);
   const [existingData, setExistingData] = useState<any>(null);
+  const [purchasing, setPurchasing] = useState(false);
 
   const cardStyles = {
     backgroundColor: 'var(--theme-card-bg)',
@@ -87,6 +89,24 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
     }
   };
 
+  const handlePurchase = async () => {
+    setPurchasing(true);
+    try {
+      await shm_request(`shm/v1/admin/cloud/paysystems/order?ps=${system.name}`, {
+        method: 'POST',
+      });
+      toast.success(`Платежная система ${system.title} успешно приобретена`);
+      onClose();
+      // Перезагрузить список платежных систем
+      window.location.reload();
+    } catch (error: any) {
+      const errorMessage = error.data?.error || error.error || 'Ошибка при покупке платежной системы';
+      toast.error(errorMessage);
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
   if (!open) return null;
 
   return (
@@ -133,6 +153,24 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2"
                    style={{ borderColor: 'var(--accent-primary)' }}></div>
+            </div>
+          ) : !system.paid ? (
+            // Показываем кнопку "Купить" если платежная система не куплена
+            <div className="text-center">
+              <p className="mb-6" style={{ color: 'var(--theme-content-text-muted)' }}>
+                Для настройки платежной системы необходимо сначала её приобрести
+              </p>
+              <button
+                onClick={handlePurchase}
+                disabled={purchasing}
+                className="px-6 py-3 rounded-lg font-medium transition-opacity disabled:opacity-50 btn-success"
+                style={{
+                  backgroundColor: 'var(--accent-primary)',
+                  color: 'var(--accent-text)',
+                }}
+              >
+                {purchasing ? 'Покупка...' : 'Купить'}
+              </button>
             </div>
           ) : system.fields ? (
             <DynamicPaymentForm

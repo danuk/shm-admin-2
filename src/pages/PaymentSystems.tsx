@@ -100,7 +100,13 @@ function PaymentSystems() {
             <p className="text-sm" style={{ color: 'var(--theme-content-text-muted)' }}>
               {system.description}
             </p>
-            {system.price && system.price > 0 ? (
+            {system.paid ? (
+              <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--theme-card-border)' }}>
+                <p className="text-sm font-semibold" style={{ color: 'var(--accent-success)' }}>
+                  Куплена
+                </p>
+              </div>
+            ) : system.price && system.price > 0 ? (
               <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--theme-card-border)' }}>
                 <p className="text-sm font-semibold" style={{ color: 'var(--accent-primary)' }}>
                   Стоимость: {system.price} ₽

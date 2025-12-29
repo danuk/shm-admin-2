@@ -451,7 +451,7 @@ function SHMCloud() {
       </div>
 
       {/* Быстрые ссылки на сервисы */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <Link
           to="/subscription"
           className="rounded-lg border p-4 hover:shadow-lg transition-all"
@@ -491,7 +491,6 @@ function SHMCloud() {
             </div>
           </div>
         </Link>
-      { subscriptionInfo && subscriptionInfo.status === 'ACTIVE' ? (
         <Link
           to="/currency-converter"
           className="rounded-lg border p-4 hover:shadow-lg transition-all"
@@ -510,7 +509,7 @@ function SHMCloud() {
               </p>
             </div>
           </div>
-        </Link> ) : undefined }
+        </Link>
       </div>
       <ShmCloudPaymentModal
         open={paymentModalOpen}
