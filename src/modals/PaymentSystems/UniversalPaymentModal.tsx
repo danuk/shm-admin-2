@@ -97,9 +97,6 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
 
   const handleFormSubmit = async (formData: Record<string, any>, isClone: boolean = false, cloneKey?: string) => {
     try {
-      const configResponse = await shm_request('shm/v1/admin/config/pay_systems');
-      const currentConfig = configResponse.data?.[0] || {};
-
       const systemConfig: any = {
         ...formData,
       };
@@ -108,16 +105,11 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
       if (formData.lifetime) systemConfig.lifetime = Number(formData.lifetime);
 
       const saveKey = isClone && cloneKey ? cloneKey : system.name;
-      const updatedConfig = {
-        ...currentConfig,
-        [saveKey]: systemConfig
-      };
 
-      await shm_request('shm/v1/admin/config', {
+      await shm_request('shm/v1/admin/config/pay_systems', {
         method: 'POST',
         body: JSON.stringify({
-          key: 'pay_systems',
-          value: updatedConfig,
+          [saveKey]: systemConfig
         }),
       });
 
@@ -172,16 +164,10 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
     }
 
     try {
-      const configResponse = await shm_request('shm/v1/admin/config/pay_systems');
-      const currentConfig = configResponse.data?.[0] || {};
-
-      const { [cloneKey]: removed, ...updatedConfig } = currentConfig;
-
-      await shm_request('shm/v1/admin/config', {
+      await shm_request('shm/v1/admin/config/pay_systems', {
         method: 'POST',
         body: JSON.stringify({
-          key: 'pay_systems',
-          value: updatedConfig,
+          [cloneKey]: null
         }),
       });
 
