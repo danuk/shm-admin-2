@@ -22,7 +22,7 @@ if [ ! -z "$SHM_BASE_PATH" ] && [ "$SHM_BASE_PATH" != "/" ]; then
     sed -i "s|/shm/healthcheck|$SHM_BASE_PATH/shm/healthcheck|" /etc/nginx/http.d/default.conf
     sed -i "s|#proxy_cookie_path;|proxy_cookie_path / $SHM_BASE_PATH;|" /etc/nginx/http.d/default.conf
     
-    # Add redirect from / to /web/
+    # Add redirect from / to /SHM_BASE_PATH/
     REDIRECT="    location = / {\n        return 301 \$scheme://\$host$SHM_BASE_PATH/;\n    }\n\n    "
     sed -i "s|location $SHM_BASE_PATH/ {|$REDIRECT location $SHM_BASE_PATH/ {|" /etc/nginx/http.d/default.conf
 

@@ -32,7 +32,7 @@ import NotFound from './pages/NotFound';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="login" replace />;
   }
   return <>{children}</>;
 }
@@ -85,7 +85,7 @@ function App() {
         }}
       />
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="login" element={<Login />} />
         <Route
           path="/"
           element={
