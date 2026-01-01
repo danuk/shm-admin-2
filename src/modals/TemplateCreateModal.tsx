@@ -124,7 +124,7 @@ export default function TemplateCreateModal({
             type="text"
             value={formData.id}
             onChange={(e) => handleChange('id', e.target.value)}
-            pattern="[A-Za-z0-9-_/]+"
+            pattern="[A-Za-z0-9_/-]+"
             placeholder="template-id"
             className="flex-1 px-3 py-2 text-sm rounded border"
             style={inputStyles}

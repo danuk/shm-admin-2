@@ -138,9 +138,9 @@ export function TemplateUploadModal({ open, onClose, onSave }: TemplateUploadMod
               className="w-full px-3 py-2 text-sm rounded border"
               style={inputStyles}
               value={id}
-              onChange={(e) => setId(e.target.value.replace(/[^A-Za-z0-9-_/]/g, ''))}
+              onChange={(e) => setId(e.target.value.replace(/[^A-Za-z0-9_/-]/g, ''))}
               placeholder=""
-              pattern="[A-Za-z0-9-_/]+"
+              pattern="[A-Za-z0-9_/-]+"
               maxLength={32}
               required
             />
