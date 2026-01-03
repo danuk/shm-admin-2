@@ -1,9 +1,13 @@
 import { useAuthStore } from '../store/authStore';
+import { createApiUrl, createPath } from './basePath';
 
 export async function shm_request<T = any>(url: string, options?: RequestInit): Promise<T> {
   const sessionId = useAuthStore.getState().getSessionId();
 
-  const response = await fetch(url, {
+  // Ensure API URLs use proper base path
+  const fullUrl = url.startsWith('http') ? url : createApiUrl(url);
+
+  const response = await fetch(fullUrl, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
@@ -15,9 +19,7 @@ export async function shm_request<T = any>(url: string, options?: RequestInit): 
 
   if (response.status === 401) {
     useAuthStore.getState().logout();
-    const baseHref = document.querySelector('base')?.getAttribute('href') || '/';
-    const basePath = baseHref.endsWith('/') ? baseHref.slice(0, -1) : baseHref;
-    window.location.href = `${basePath}/login`;
+    window.location.href = createPath('/login');
     throw new Error('Unauthorized');
   }
 
@@ -52,13 +54,13 @@ export function normalizeListResponse<T = any>(res: any): ApiListResponse<T> {
 }
 
 export async function shm_login(login: string, password: string, otpToken?: string): Promise<any> {
-  const response = await fetch('shm/v1/user/auth', {
+  const response = await fetch(createApiUrl('shm/v1/user/auth'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ 
-      login, 
+    body: JSON.stringify({
+      login,
       password,
       ...(otpToken ? { otp_token: otpToken } : {})
     }),
@@ -84,7 +86,7 @@ export async function shm_login(login: string, password: string, otpToken?: stri
     throw new Error('Не получен session_id');
   }
 
-  const userResponse = await fetch('shm/v1/user', {
+  const userResponse = await fetch(createApiUrl('shm/v1/user'), {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

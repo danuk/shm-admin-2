@@ -4,6 +4,7 @@ import DataTable, { SortDirection } from '../components/DataTable';
 import { UserModal, UserCreateModal, UserChangePasswordModal} from '../modals';
 import Help from '../components/Help';
 import { shm_request, normalizeListResponse } from '../lib/shm_request';
+import { createApiUrl } from '../lib/basePath';
 import { Plus } from 'lucide-react';
 import { useSelectedUserStore } from '../store/selectedUserStore';
 
@@ -126,7 +127,7 @@ function Users() {
         body: JSON.stringify({ user_id: selectedRow.user_id }),
       });
       const sessionId = sessionRes.id;
-      window.open(`${cliUrl}/shm/user/auth.cgi?session_id=${sessionId}`, '_blank');
+      window.open(`${cliUrl}${createApiUrl('shm/user/auth.cgi')}?session_id=${sessionId}`, '_blank');
     } catch (error) {
       toast.error('Не удалось открыть ссылку');
     }

@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: './',
+  base: process.env.NODE_ENV === 'development'
+    ? process.env.VITE_BASE_PATH || '/'
+    : './',
   build: {
     target: 'es2020',
     minify: 'terser',
@@ -24,14 +26,9 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000,
   },
-  // Uncomment and configure the server proxy if needed
-  // server: {
-  //   proxy: {
-  //     '/shm': {
-  //       target: 'http://localhost:8081',
-  //       changeOrigin: true,
-  //       secure: false,
-  //     },
-  //   },
-  // },
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: ['admin-2-vite', 'localhost', '127.0.0.1'],
+    port: 5173,
+  },
 });

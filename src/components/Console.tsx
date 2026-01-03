@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { createApiUrl } from '../lib/basePath';
 
 interface ConsoleProps {
   pipelineId: string | number;
@@ -21,7 +22,7 @@ export default function Console({ pipelineId }: ConsoleProps) {
     const getLogs = async () => {
       try {
         const response = await fetch(
-          `shm/admin/console.cgi?id=${pipelineId}&offset=${offsetRef.current}`,
+          createApiUrl(`shm/admin/console.cgi?id=${pipelineId}&offset=${offsetRef.current}`),
           {
             credentials: 'include',
             headers: {

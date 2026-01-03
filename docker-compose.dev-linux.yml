@@ -3,17 +3,13 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile-dev
-      target: node
     pull_policy: always
     restart: always
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    network_mode: host
     environment:
-      SHM_HOST: http://host.docker.internal:8080
+      SHM_HOST: http://127.0.0.1:8080
       VITE_SHOW_SWAGGER: "true"
       VITE_BASE_PATH: /
-    expose:
-      - "5173"
     volumes:
       - ./src:/app/src
       - ./public:/app/public
@@ -24,14 +20,9 @@ services:
       dockerfile: ./Dockerfile-dev
       target: admin-2-nginx
     restart: always
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    network_mode: host
     environment:
-      - VITE_HOST=admin-2-vite
+      - VITE_HOST=127.0.0.1
       - VITE_SHOW_SWAGGER=true
-      - SHM_HOST=http://host.docker.internal:8080
+      - SHM_HOST=http://127.0.0.1:8080
       - SHM_BASE_PATH=/
-    ports:
-      - "8081:80"
-    depends_on:
-      - admin-2-vite
