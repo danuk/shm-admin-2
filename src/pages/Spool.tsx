@@ -9,13 +9,14 @@ import { Plus } from 'lucide-react';
 const spoolColumns = [
   { key: 'created', label: 'Создано', visible: true, sortable: true },
   { key: 'user_id', label: 'Пользователь', visible: true, sortable: true },
-  { key: 'event', label: 'event', visible: true, sortable: true },
+  { key: 'event', label: 'Событие', visible: true, sortable: true },
   {
-    key: 'event',
-    label: 'title',
+    key: 'title',
+    label: 'Название',
     visible: true,
     sortable: false,
-    render: (value: any) => value?.title || '-'
+    filterKey: 'event.title',
+    render: (value: any, row: any) => row?.event?.title || '-'
   },
   {
     key: 'status',
@@ -72,10 +73,23 @@ function Spool() {
     setLoading(true);
     let url = `shm/v1/admin/spool?limit=${l}&offset=${o}`;
 
-    const activeFilters: Record<string, string> = {};
+    const activeFilters: Record<string, any> = {};
     Object.entries(f).forEach(([key, value]) => {
       if (value) {
-        activeFilters[key] = value;
+        // Поддержка вложенных фильтров (например event.title -> {"event":{"title":{"-like":"%value%"}}})
+        if (key.includes('.')) {
+          const parts = key.split('.');
+          let current = activeFilters;
+          for (let i = 0; i < parts.length - 1; i++) {
+            if (!current[parts[i]]) {
+              current[parts[i]] = {};
+            }
+            current = current[parts[i]];
+          }
+          current[parts[parts.length - 1]] = { '-like': value };
+        } else {
+          activeFilters[key] = value;
+        }
       }
     });
 

@@ -27,6 +27,7 @@ interface Column {
   render?: (value: any, row: any) => React.ReactNode;
   filterType?: 'text' | 'select';
   filterOptions?: Array<{ value: string; label: string }>;
+  filterKey?: string; // Для вложенных фильтров, например "event.title" -> {"event":{"title":{"-like":"%value%"}}}
 }
 
 export type SortDirection = 'asc' | 'desc' | null;
@@ -663,10 +664,10 @@ function DataTable({
                   {col.filterType === 'select' && col.filterOptions ? (
                     <div className="relative">
                       <select
-                        value={columnFilters[col.key] || ''}
+                        value={columnFilters[col.filterKey || col.key] || ''}
                         onChange={e => setColumnFilters(prev => ({
                           ...prev,
-                          [col.key]: e.target.value
+                          [col.filterKey || col.key]: e.target.value
                         }))}
                         className="w-full text-xs py-1 px-2 pr-6 rounded appearance-none"
                         style={{
@@ -686,9 +687,9 @@ function DataTable({
                         className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none"
                         style={{ color: 'var(--theme-content-text-muted)' }}
                       />
-                      {columnFilters[col.key] && (
+                      {columnFilters[col.filterKey || col.key] && (
                         <button
-                          onClick={() => setColumnFilters(prev => ({ ...prev, [col.key]: '' }))}
+                          onClick={() => setColumnFilters(prev => ({ ...prev, [col.filterKey || col.key]: '' }))}
                           className="absolute right-6 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-slate-500/30"
                         >
                           <X className="w-3 h-3" style={{ color: 'var(--theme-content-text-muted)' }} />
@@ -704,10 +705,10 @@ function DataTable({
                       <input
                         type="text"
                         placeholder="Фильтр..."
-                        value={columnFilters[col.key] || ''}
+                        value={columnFilters[col.filterKey || col.key] || ''}
                         onChange={e => setColumnFilters(prev => ({
                           ...prev,
-                          [col.key]: e.target.value
+                          [col.filterKey || col.key]: e.target.value
                         }))}
                         className="w-full text-xs py-1 pl-7 pr-2 rounded"
                         style={{
@@ -716,9 +717,9 @@ function DataTable({
                           color: 'var(--theme-input-text)',
                         }}
                       />
-                      {columnFilters[col.key] && (
+                      {columnFilters[col.filterKey || col.key] && (
                         <button
-                          onClick={() => setColumnFilters(prev => ({ ...prev, [col.key]: '' }))}
+                          onClick={() => setColumnFilters(prev => ({ ...prev, [col.filterKey || col.key]: '' }))}
                           className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-slate-500/30"
                         >
                           <X className="w-3 h-3" style={{ color: 'var(--theme-content-text-muted)' }} />
