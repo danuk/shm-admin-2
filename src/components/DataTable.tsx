@@ -15,7 +15,8 @@ import {
   ArrowDown,
   ArrowUpDown,
   ChevronDown,
-  Timer
+  Timer,
+  ListRestart
 } from 'lucide-react';
 
 interface Column {
@@ -398,6 +399,19 @@ function DataTable({
     setColumnFilters({});
   };
 
+  const resetTableSettings = () => {
+    if (storageKey) {
+      localStorage.removeItem(`dataTable_${storageKey}`);
+    }
+    // Сбрасываем колонки к дефолтным
+    const defaultColumns = initialColumns.map(col => ({
+      ...col,
+      width: col.width || DEFAULT_COLUMN_WIDTH
+    }));
+    setColumns(defaultColumns);
+    setAutoRefresh(0);
+  };
+
   const hasActiveFilters = Object.values(columnFilters).some(v => v);
 
   const currentPage = Math.floor(offset / limit) + 1;
@@ -443,7 +457,15 @@ function DataTable({
         </div>
 
         <div className="flex gap-2 items-center">
-          {}
+          {storageKey && (
+            <button
+              onClick={resetTableSettings}
+              className="btn-icon"
+              title="Сбросить настройки таблицы (ширина, порядок колонок)"
+            >
+              <ListRestart className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={clearAllFilters}
             className="btn-icon"
@@ -453,8 +475,6 @@ function DataTable({
           >
             <FilterX className="w-4 h-4" />
           </button>
-
-          {}
           {onRefresh && (
             <button
               onClick={onRefresh}

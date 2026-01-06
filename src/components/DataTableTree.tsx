@@ -16,7 +16,8 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
-  Timer
+  Timer,
+  ListRestart
 } from 'lucide-react';
 
 interface Column {
@@ -420,6 +421,19 @@ function DataTableTree({
     setColumnFilters({});
   };
 
+  const resetTableSettings = () => {
+    if (storageKey) {
+      localStorage.removeItem(`dataTableTree_${storageKey}`);
+    }
+    // Сбрасываем колонки к дефолтным
+    const defaultColumns = initialColumns.map(col => ({
+      ...col,
+      width: col.width || DEFAULT_COLUMN_WIDTH
+    }));
+    setColumns(defaultColumns);
+    setAutoRefresh(0);
+  };
+
   const handleToggleNode = async (nodeIndex: number) => {
     const node = flattenTree()[nodeIndex];
     if (!node) return;
@@ -547,6 +561,15 @@ function DataTableTree({
         </div>
 
         <div className="flex gap-2 items-center">
+          {storageKey && (
+            <button
+              onClick={resetTableSettings}
+              className="btn-icon"
+              title="Сбросить настройки таблицы (ширина, порядок колонок)"
+            >
+              <ListRestart className="w-4 h-4" />
+            </button>
+          )}
           {/* Очистить фильтры */}
           <button
             onClick={clearAllFilters}
