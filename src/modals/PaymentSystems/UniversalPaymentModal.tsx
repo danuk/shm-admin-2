@@ -333,6 +333,17 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
             </p>
           )}
 
+          {system.infoMessage && activeTab === 'main' && (
+            <div
+              className="p-3 rounded text-sm mb-4"
+              style={{
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                color: 'var(--accent-primary)',
+              }}
+              dangerouslySetInnerHTML={{ __html: system.infoMessage }}
+            />
+          )}
+
           {!system.paid && system.price && system.price > 0 ? (
             <div className="p-3 rounded mb-4" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
               <p className="text-sm font-semibold" style={{ color: 'var(--accent-primary)' }}>
@@ -369,7 +380,6 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
                 name: system.name,
                 title: system.title,
                 description: system.description,
-                infoMessage: system.infoMessage,
                 fields: system.fields
               }}
               existingData={existingData}
