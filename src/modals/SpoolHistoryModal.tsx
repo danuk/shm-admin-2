@@ -64,19 +64,6 @@ export default function SpoolHistoryModal({
               }}
               title="Назад"
             >
-              <span className="hidden sm:inline">Назад</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="p-2 rounded flex items-center gap-2"
-              style={{
-                backgroundColor: 'var(--theme-button-secondary-bg)',
-                color: 'var(--theme-button-secondary-text)',
-                border: '1px solid var(--theme-button-secondary-border)',
-              }}
-              title="Закрыть"
-            >
-              <X className="w-4 h-4" />
               <span className="hidden sm:inline">Закрыть</span>
             </button>
           </div>
