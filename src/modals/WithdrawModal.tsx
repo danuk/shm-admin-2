@@ -96,37 +96,30 @@ export default function WithdrawModal({
       size="lg"
     >
       <div className="space-y-4">
-        {}
-        <div className="flex items-center gap-3">
-          <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={labelStyles}>
             Пользователь
           </label>
-          <div className="flex-1">
-            <UserSelect
-              value={formData.user_id}
-              onChange={(value) => handleChange('user_id', value)}
-              readonly
-            />
-          </div>
+          <UserSelect
+            value={formData.user_id}
+            onChange={(value) => handleChange('user_id', value)}
+            readonly
+          />
         </div>
 
-        {}
-        <div className="flex items-center gap-3">
-          <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={labelStyles}>
             Услуга
           </label>
-          <div className="flex-1">
-            <ServiceSelect
-              value={formData.service_id}
-              readonly
-            />
-          </div>
+          <ServiceSelect
+            value={formData.service_id}
+            readonly
+          />
         </div>
 
-        {}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <div className="flex items-center gap-3">
-            <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1" style={labelStyles}>
               Цена
             </label>
             <input
@@ -135,12 +128,12 @@ export default function WithdrawModal({
               onChange={(e) => handleChange('cost', Number(e.target.value))}
               step="0.01"
               min="0"
-              className="flex-1 px-3 py-2 text-sm rounded border"
+              className="w-full px-3 py-2 text-sm rounded border"
               style={inputStyles}
             />
           </div>
-          <div className="flex items-center gap-3">
-            <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+          <div>
+            <label className="block text-sm font-medium mb-1" style={labelStyles}>
               Количество
             </label>
             <input
@@ -149,16 +142,15 @@ export default function WithdrawModal({
               onChange={(e) => handleChange('qnt', Number(e.target.value))}
               step="1"
               min="1"
-              className="flex-1 px-3 py-2 text-sm rounded border"
+              className="w-full px-3 py-2 text-sm rounded border"
               style={inputStyles}
             />
           </div>
         </div>
 
-        {}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <div className="flex items-center gap-3">
-            <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1" style={labelStyles}>
               Бонусы
             </label>
             <input
@@ -167,12 +159,12 @@ export default function WithdrawModal({
               onChange={(e) => handleChange('bonus', Number(e.target.value))}
               step="0.01"
               min="0"
-              className="flex-1 px-3 py-2 text-sm rounded border"
+              className="w-full px-3 py-2 text-sm rounded border"
               style={inputStyles}
             />
           </div>
-          <div className="flex items-center gap-3">
-            <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+          <div>
+            <label className="block text-sm font-medium mb-1" style={labelStyles}>
               Скидка (%)
             </label>
             <input
@@ -182,15 +174,14 @@ export default function WithdrawModal({
               step="1"
               min="0"
               max="100"
-              className="flex-1 px-3 py-2 text-sm rounded border"
+              className="w-full px-3 py-2 text-sm rounded border"
               style={inputStyles}
             />
           </div>
         </div>
 
-        {}
-        <div className="flex items-center gap-3">
-          <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={labelStyles}>
             Период (мес.)
           </label>
           <input
@@ -200,49 +191,47 @@ export default function WithdrawModal({
             step="0.0001"
             min="0.0001"
             max="120"
-            className="flex-1 px-3 py-2 text-sm rounded border"
+            className="w-full px-3 py-2 text-sm rounded border"
             style={inputStyles}
           />
-          <span className="text-xs" style={labelStyles}>M.DDHH (M - месяцы, DD - дни, HH - часы)</span>
+          <span className="block text-xs mt-1" style={labelStyles}>M.DDHH (M - месяцы, DD - дни, HH - часы)</span>
         </div>
 
-        {}
-        <div className="flex items-center gap-3">
-          <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={labelStyles}>
             Итого
           </label>
           <input
             type="text"
             value={formData.total || ''}
             readOnly
-            className="flex-1 px-3 py-2 text-sm rounded border opacity-60"
+            className="w-full px-3 py-2 text-sm rounded border opacity-60"
             style={inputStyles}
           />
         </div>
 
-        {}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <div className="flex items-center gap-3">
-            <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1" style={labelStyles}>
               Дата списания
             </label>
             <input
               type="text"
               value={formData.withdraw_date || ''}
               readOnly
-              className="flex-1 px-3 py-2 text-sm rounded border opacity-60"
+              className="w-full px-3 py-2 text-sm rounded border opacity-60"
               style={inputStyles}
             />
           </div>
-          <div className="flex items-center gap-3">
-            <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+          <div>
+            <label className="block text-sm font-medium mb-1" style={labelStyles}>
               Дата окончания
             </label>
             <input
               type="text"
               value={formData.end_date || ''}
               readOnly
-              className="flex-1 px-3 py-2 text-sm rounded border opacity-60"
+              className="w-full px-3 py-2 text-sm rounded border opacity-60"
               style={inputStyles}
             />
           </div>

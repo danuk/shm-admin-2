@@ -62,74 +62,66 @@ export default function PayModal({
       size="lg"
     >
       <div className="space-y-4">
-        {}
-        <div className="flex items-center gap-3">
-          <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={labelStyles}>
             Пользователь
           </label>
-          <div className="flex-1">
-            <UserSelect
-              value={viewData.user_id}
-              onChange={() => {}}
-              readonly
-            />
-          </div>
+          <UserSelect
+            value={viewData.user_id}
+            onChange={() => {}}
+            readonly
+          />
         </div>
 
-        {}
-        <div className="flex items-center gap-3">
-          <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={labelStyles}>
             Дата
           </label>
           <input
             type="text"
             value={viewData.date || ''}
             readOnly
-            className="flex-1 px-3 py-2 text-sm rounded border opacity-60"
+            className="w-full px-3 py-2 text-sm rounded border opacity-60"
             style={inputStyles}
           />
         </div>
 
-        {}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <div className="flex items-center gap-3">
-            <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1" style={labelStyles}>
               Сумма
             </label>
             <input
               type="text"
               value={viewData.money || ''}
               readOnly
-              className="flex-1 px-3 py-2 text-sm rounded border opacity-60"
+              className="w-full px-3 py-2 text-sm rounded border opacity-60"
               style={inputStyles}
             />
           </div>
-          <div className="flex items-center gap-3">
-            <label className="w-32 text-sm font-medium shrink-0" style={labelStyles}>
+          <div>
+            <label className="block text-sm font-medium mb-1" style={labelStyles}>
               Плат. система
             </label>
             <input
               type="text"
               value={viewData.pay_system_id || ''}
               readOnly
-              className="flex-1 px-3 py-2 text-sm rounded border opacity-60"
+              className="w-full px-3 py-2 text-sm rounded border opacity-60"
               style={inputStyles}
             />
           </div>
         </div>
 
-        {}
-        <div className="flex items-start gap-3">
-          <label className="w-32 text-sm font-medium shrink-0 pt-2" style={labelStyles}>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={labelStyles}>
             Комментарий
           </label>
-          <div className="flex-1">
-            <JsonEditor
-              data={viewData.comment || {}}
-              onChange={() => {}}
-              readonly
-            />
-          </div>
+          <JsonEditor
+            data={viewData.comment || {}}
+            onChange={() => {}}
+            readonly
+          />
         </div>
       </div>
     </Modal>
