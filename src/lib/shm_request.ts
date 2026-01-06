@@ -24,8 +24,19 @@ export async function shm_request<T = any>(url: string, options?: RequestInit): 
   }
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || response.statusText);
+    const errorText = await response.text();
+    let errorData: any;
+
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { error: errorText || response.statusText };
+    }
+
+    const error = new Error(errorData.error || errorText || response.statusText) as any;
+    error.data = errorData;
+    error.status = response.status;
+    throw error;
   }
 
   const contentType = response.headers.get('content-type');
