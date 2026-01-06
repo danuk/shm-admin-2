@@ -3,7 +3,7 @@ import { shm_request, normalizeListResponse } from './shm_request';
 export interface DashboardAnalytics {
   counts: {
     totalUsers: number;
-    activeUserServices: number;
+    userServicesCount: number;
     totalRevenue: number;
   };
   payments: {
@@ -21,15 +21,20 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - period);
 
-    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    const formatDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
     const start = formatDate(startDate);
     const stop = formatDate(endDate);
 
     // Параллельные запросы к API - только данные за период
     const results = await Promise.allSettled([
       shm_request('shm/v1/admin/user?limit=1'),
-      shm_request(`shm/v1/admin/user/service?start=${start}&stop=${stop}&field=created&limit=5000`),
-      shm_request(`shm/v1/admin/user/pay?start=${start}&stop=${stop}&field=date&limit=9999`),
+      shm_request(`shm/v1/admin/user/service?limit=0`),
+      shm_request(`shm/v1/admin/user/pay?start=${start}&stop=${stop}&field=date&limit=0`),
     ]);
 
     const [
@@ -39,7 +44,7 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
     ] = results.map((result) => (result.status === 'fulfilled' ? result.value : null));
 
     // Нормализация данных
-    const totalUsersCount = usersCountRes?.items || usersCountRes?.total || 0;
+    const totalUsersCount = usersCountRes?.items || 0;
     const userServicesNew = userServicesNewRes ? normalizeListResponse(userServicesNewRes).data : [];
     const payments = paymentsRes ? normalizeListResponse(paymentsRes).data : [];
 
@@ -53,14 +58,37 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
 
     // Подсчеты
     const totalRevenue = realPayments.reduce((sum: number, p: any) => sum + parseFloat(p.money || 0), 0);
-    const activeUserServices = userServicesNew.filter((us: any) => us.status === 'ACTIVE').length;
 
     // Группировка платежей по датам
     const paymentsByDate: Record<string, number> = {};
     realPayments.forEach((p: any) => {
-      const date = p.date.split('T')[0];
-      paymentsByDate[date] = (paymentsByDate[date] || 0) + parseFloat(p.money || 0);
+      // Поддержка разных форматов даты
+      let dateStr = '';
+      if (p.date) {
+        if (p.date.includes('T')) {
+          dateStr = p.date.split('T')[0];
+        } else if (p.date.includes(' ')) {
+          dateStr = p.date.split(' ')[0];
+        } else {
+          dateStr = p.date;
+        }
+      }
+      if (dateStr) {
+        paymentsByDate[dateStr] = (paymentsByDate[dateStr] || 0) + parseFloat(p.money || 0);
+      }
     });
+
+    // Генерируем все дни периода (чтобы были все 7 точек на графике)
+    const allDays: { date: string; value: number }[] = [];
+    for (let i = period - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = formatDate(d);
+      allDays.push({
+        date: dateStr,
+        value: paymentsByDate[dateStr] || 0,
+      });
+    }
 
     // Статистика по статусам сервисов
     const servicesByStatus: Record<string, number> = {};
@@ -71,11 +99,11 @@ export async function fetchDashboardAnalytics(period: number = 7): Promise<Dashb
     const result: DashboardAnalytics = {
       counts: {
         totalUsers: totalUsersCount,
-        activeUserServices: activeUserServices,
+        userServicesCount: userServicesNewRes?.items || 0,
         totalRevenue: totalRevenue,
       },
       payments: {
-        timeline: Object.entries(paymentsByDate).map(([date, value]) => ({ date, value })),
+        timeline: allDays,
       },
       services: {
         byStatus: Object.entries(servicesByStatus).map(([name, value]) => ({ name, value })),

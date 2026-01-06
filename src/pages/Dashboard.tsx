@@ -116,7 +116,7 @@ function Dashboard() {
         <Link
           to="/users">
         <StatCard
-          title="Пользователи"
+          title="Общее количество пользователей"
           value={analytics?.counts.totalUsers ?? '...'}
           icon={Users}
           color="cyan"
@@ -126,8 +126,8 @@ function Dashboard() {
         <Link
           to="/user-services">
         <StatCard
-          title="Услуги пользователей"
-          value={analytics?.counts.activeUserServices ?? '...'}
+          title="Общее количество услуг пользователей"
+          value={analytics?.counts.userServicesCount ?? '...'}
           icon={Package}
           color="emerald"
           loading={loading}
@@ -136,7 +136,7 @@ function Dashboard() {
         <Link
           to="/pays">
         <StatCard
-          title="Платежи"
+          title="Платежи за последние 7 дней"
           value={analytics?.counts.totalRevenue ?? '...'}
           icon={Package}
           color="emerald"
