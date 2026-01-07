@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Settings, Save, Plus, Trash2, Bot, Globe, CreditCard, List, Palette, Shield } from 'lucide-react';
+import { Settings, Save, Plus, Trash2, Bot, Globe, CreditCard, List, Palette, Shield, Copy, ExternalLink, Key, Edit2 } from 'lucide-react';
 import { shm_request, normalizeListResponse } from '../lib/shm_request';
 import toast from 'react-hot-toast';
 import DataTable, { SortDirection } from '../components/DataTable';
@@ -14,13 +14,19 @@ interface ConfigItem {
   value: any;
 }
 
-type TabType = 'general' | 'branding' | 'telegram' | 'otp' | 'payment' | 'all';
+type TabType = 'general' | 'branding' | 'telegram' | 'otp' | 'passkey' | 'payment' | 'all';
 
 interface TelegramBot {
   token: string;
   secret?: string;
   template_id?: string;
   webhook_set?: boolean;
+}
+
+interface PasskeyCredential {
+  id: string;
+  name: string;
+  created_at: string;
 }
 
 const currencies = [
@@ -113,6 +119,15 @@ function ConfigurationTabs() {
   const [otpError, setOtpError] = useState('');
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
 
+  // Passkey настройки
+  const [passkeyCredentials, setPasskeyCredentials] = useState<PasskeyCredential[]>([]);
+  const [passkeyEnabled, setPasskeyEnabled] = useState(false);
+  const [passkeyRegistering, setPasskeyRegistering] = useState(false);
+  const [passkeyNewName, setPasskeyNewName] = useState('');
+  const [passkeyRenameModal, setPasskeyRenameModal] = useState(false);
+  const [passkeyRenameId, setPasskeyRenameId] = useState('');
+  const [passkeyRenameName, setPasskeyRenameName] = useState('');
+
   // Telegram боты
   const [telegramBots, setTelegramBots] = useState<Record<string, TelegramBot>>({});
   const [newBotName, setNewBotName] = useState('');
@@ -175,6 +190,9 @@ function ConfigurationTabs() {
     }
     if (activeTab === 'otp') {
       checkOtpStatus();
+    }
+    if (activeTab === 'passkey') {
+      checkPasskeyStatus();
     }
   }, [activeTab, limit, offset, filters, sortField, sortDirection]);
 
@@ -393,6 +411,173 @@ function ConfigurationTabs() {
     } catch (error) {
       toast.error('Ошибка отключения OTP');
     }
+  };
+
+  // ===== Passkey Functions =====
+  const checkPasskeyStatus = async () => {
+    try {
+      const response = await shm_request('shm/v1/user/passkey/list');
+      const data = response.data?.[0];
+      if (data) {
+        setPasskeyCredentials(data.credentials || []);
+        setPasskeyEnabled(data.enabled || false);
+      } else {
+        setPasskeyCredentials([]);
+        setPasskeyEnabled(false);
+      }
+    } catch (error) {
+      setPasskeyCredentials([]);
+      setPasskeyEnabled(false);
+    }
+  };
+
+  const isPasskeySupported = () => {
+    return window.PublicKeyCredential !== undefined;
+  };
+
+  const registerPasskey = async () => {
+    if (!isPasskeySupported()) {
+      toast.error('Ваш браузер не поддерживает Passkey');
+      return;
+    }
+
+    setPasskeyRegistering(true);
+    try {
+      // Получаем опции для регистрации
+      const optionsResponse = await shm_request('shm/v1/user/passkey/register/options', { method: 'POST' });
+      const options = optionsResponse.data?.[0];
+      
+      if (!options) {
+        throw new Error('Не удалось получить опции регистрации');
+      }
+
+      // Преобразуем base64url в ArrayBuffer
+      const challenge = base64urlToArrayBuffer(options.challenge);
+      const userId = base64urlToArrayBuffer(options.user.id);
+
+      const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
+        challenge,
+        rp: options.rp,
+        user: {
+          ...options.user,
+          id: userId,
+        },
+        pubKeyCredParams: options.pubKeyCredParams,
+        timeout: options.timeout,
+        attestation: options.attestation as AttestationConveyancePreference,
+        authenticatorSelection: options.authenticatorSelection,
+        excludeCredentials: options.excludeCredentials?.map((cred: any) => ({
+          ...cred,
+          id: base64urlToArrayBuffer(cred.id),
+        })),
+      };
+
+      // Вызываем WebAuthn API
+      const credential = await navigator.credentials.create({
+        publicKey: publicKeyCredentialCreationOptions,
+      }) as PublicKeyCredential;
+
+      if (!credential) {
+        throw new Error('Не удалось создать credential');
+      }
+
+      const attestationResponse = credential.response as AuthenticatorAttestationResponse;
+
+      // Отправляем результат на сервер
+      const completeResponse = await shm_request('shm/v1/user/passkey/register/complete', {
+        method: 'POST',
+        body: JSON.stringify({
+          credential_id: credential.id,
+          rawId: arrayBufferToBase64url(credential.rawId),
+          response: {
+            clientDataJSON: arrayBufferToBase64url(attestationResponse.clientDataJSON),
+            attestationObject: arrayBufferToBase64url(attestationResponse.attestationObject),
+          },
+          name: passkeyNewName || `Passkey ${passkeyCredentials.length + 1}`,
+        }),
+      });
+
+      if (completeResponse.data?.[0]?.success) {
+        toast.success('Passkey успешно зарегистрирован');
+        setPasskeyNewName('');
+        checkPasskeyStatus();
+      }
+    } catch (error: any) {
+      if (error.name === 'NotAllowedError') {
+        toast.error('Регистрация отменена пользователем');
+      } else {
+        toast.error(error.message || 'Ошибка регистрации Passkey');
+      }
+    } finally {
+      setPasskeyRegistering(false);
+    }
+  };
+
+  const deletePasskey = async (credentialId: string) => {
+    if (!confirm('Вы уверены, что хотите удалить этот Passkey?')) {
+      return;
+    }
+
+    try {
+      await shm_request('shm/v1/user/passkey/delete', {
+        method: 'POST',
+        body: JSON.stringify({ credential_id: credentialId }),
+      });
+      toast.success('Passkey удален');
+      checkPasskeyStatus();
+    } catch (error) {
+      toast.error('Ошибка удаления Passkey');
+    }
+  };
+
+  const openRenameModal = (id: string, name: string) => {
+    setPasskeyRenameId(id);
+    setPasskeyRenameName(name);
+    setPasskeyRenameModal(true);
+  };
+
+  const renamePasskey = async () => {
+    if (!passkeyRenameName.trim()) {
+      toast.error('Введите название');
+      return;
+    }
+
+    try {
+      await shm_request('shm/v1/user/passkey/rename', {
+        method: 'POST',
+        body: JSON.stringify({
+          credential_id: passkeyRenameId,
+          name: passkeyRenameName,
+        }),
+      });
+      toast.success('Passkey переименован');
+      setPasskeyRenameModal(false);
+      checkPasskeyStatus();
+    } catch (error) {
+      toast.error('Ошибка переименования Passkey');
+    }
+  };
+
+  // Вспомогательные функции для WebAuthn
+  const base64urlToArrayBuffer = (base64url: string): ArrayBuffer => {
+    const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+    const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+    const binary = atob(base64 + padding);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
+
+  const arrayBufferToBase64url = (buffer: ArrayBuffer): string => {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64 = btoa(binary);
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
   };
 
   const generateSecret = () => {
@@ -630,6 +815,14 @@ function ConfigurationTabs() {
         >
           <Shield className="w-4 h-4" />
           OTP (2FA)
+        </button>
+        <button
+          onClick={() => setActiveTab('passkey')}
+          className="px-4 py-2 border-b-2 transition-colors flex items-center gap-2"
+          style={tabButtonStyle(activeTab === 'passkey')}
+        >
+          <Key className="w-4 h-4" />
+          Passkey
         </button>
         {CloudAuth !== null && (
           <Link
@@ -939,6 +1132,119 @@ https://t.me/Name_bot?start=USER_ID
                     </button>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Вкладка "Passkey" */}
+      {activeTab === 'passkey' && (
+        <div className="space-y-4">
+          {/* Информация о Passkey */}
+          <div className="rounded-lg border p-6" style={cardStyles}>
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--theme-content-text)' }}>
+              <Key className="w-5 h-5" style={{ color: 'var(--accent-primary)' }} />
+              Passkey (беспарольная аутентификация)
+            </h3>
+            <p className="text-sm mb-4" style={{ color: 'var(--theme-content-text-muted)' }}>
+              Passkey позволяет входить в систему без пароля, используя биометрию (отпечаток пальца, Face ID) 
+              или PIN-код устройства. Это более безопасный и удобный способ аутентификации.
+            </p>
+            
+            {!isPasskeySupported() && (
+              <div className="p-3 rounded border mb-4" style={{ backgroundColor: 'var(--accent-warning)', borderColor: 'var(--accent-warning)' }}>
+                <p className="text-sm text-white">
+                  Ваш браузер не поддерживает Passkey. Попробуйте использовать Chrome, Safari или Edge последней версии.
+                </p>
+              </div>
+            )}
+
+            {/* Список зарегистрированных Passkey */}
+            {passkeyCredentials.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-md font-medium mb-3" style={{ color: 'var(--theme-content-text)' }}>
+                  Зарегистрированные Passkey
+                </h4>
+                <div className="space-y-2">
+                  {passkeyCredentials.map((cred) => (
+                    <div
+                      key={cred.id}
+                      className="flex items-center justify-between p-3 rounded border"
+                      style={{ borderColor: 'var(--theme-card-border)', backgroundColor: 'var(--theme-input-bg)' }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Key className="w-5 h-5" style={{ color: 'var(--accent-primary)' }} />
+                        <div>
+                          <p className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
+                            {cred.name}
+                          </p>
+                          <p className="text-xs" style={{ color: 'var(--theme-content-text-muted)' }}>
+                            Добавлен: {cred.created_at}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => openRenameModal(cred.id, cred.name)}
+                          className="p-2 rounded hover:opacity-80"
+                          style={{ backgroundColor: 'var(--theme-button-secondary-bg)', color: 'var(--theme-button-secondary-text)' }}
+                          title="Переименовать"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deletePasskey(cred.id)}
+                          className="p-2 rounded hover:opacity-80"
+                          style={{ backgroundColor: 'var(--accent-danger)', color: 'white' }}
+                          title="Удалить"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Форма добавления нового Passkey */}
+            <div className="border-t pt-4" style={{ borderColor: 'var(--theme-card-border)' }}>
+              <h4 className="text-md font-medium mb-3" style={{ color: 'var(--theme-content-text)' }}>
+                Добавить новый Passkey
+              </h4>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={passkeyNewName}
+                  onChange={(e) => setPasskeyNewName(e.target.value)}
+                  placeholder="Название устройства (опционально)"
+                  className="flex-1 px-3 py-2 rounded border"
+                  style={inputStyles}
+                />
+                <button
+                  onClick={registerPasskey}
+                  disabled={passkeyRegistering || !isPasskeySupported()}
+                  className="px-4 py-2 rounded flex items-center gap-2"
+                  style={{
+                    backgroundColor: passkeyRegistering || !isPasskeySupported() ? 'var(--theme-button-secondary-bg)' : 'var(--accent-success)',
+                    color: passkeyRegistering || !isPasskeySupported() ? 'var(--theme-button-secondary-text)' : 'white',
+                    opacity: passkeyRegistering || !isPasskeySupported() ? 0.6 : 1,
+                    cursor: passkeyRegistering || !isPasskeySupported() ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {passkeyRegistering ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Регистрация...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      Добавить Passkey
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -1432,13 +1738,66 @@ https://t.me/Name_bot?start=USER_ID
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--theme-content-text)' }}>
                   Секретный ключ (для ввода вручную)
                 </label>
-                <input
-                  type="text"
-                  value={otpSetupData.secret}
-                  readOnly
-                  className="w-full px-3 py-2 rounded border font-mono text-sm"
-                  style={{ ...inputStyles, opacity: 0.8 }}
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={otpSetupData.secret}
+                    readOnly
+                    className="flex-1 px-3 py-2 rounded border font-mono text-sm"
+                    style={{ ...inputStyles, opacity: 0.8 }}
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(otpSetupData.secret);
+                      toast.success('Секретный ключ скопирован');
+                    }}
+                    className="px-3 py-2 rounded flex items-center gap-2"
+                    style={{
+                      backgroundColor: 'var(--theme-button-secondary-bg)',
+                      color: 'var(--theme-button-secondary-text)',
+                    }}
+                    title="Скопировать секрет"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Кнопки открытия в приложениях */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--theme-content-text)' }}>
+                  Добавить в приложение-аутентификатор
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={otpSetupData.qr_url}
+                    className="px-4 py-2 rounded flex items-center gap-2 no-underline"
+                    style={{
+                      backgroundColor: 'var(--accent-primary)',
+                      color: 'var(--accent-text)',
+                    }}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Открыть в приложении
+                  </a>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(otpSetupData.qr_url);
+                      toast.success('Ссылка скопирована');
+                    }}
+                    className="px-4 py-2 rounded flex items-center gap-2"
+                    style={{
+                      backgroundColor: 'var(--theme-button-secondary-bg)',
+                      color: 'var(--theme-button-secondary-text)',
+                    }}
+                  >
+                    <Copy className="w-4 h-4" />
+                    Скопировать ссылку
+                  </button>
+                </div>
+                <p className="text-xs mt-2" style={{ color: 'var(--theme-content-text-muted)' }}>
+                  Поддерживаются: Apple Пароли, Bitwarden, 1Password, Google Authenticator, Authy и другие
+                </p>
               </div>
 
               {/* Резервные коды */}
@@ -1526,6 +1885,65 @@ https://t.me/Name_bot?start=USER_ID
                 </button>
                 <button
                   onClick={() => setOtpSetupModal(false)}
+                  className="px-4 py-2 rounded"
+                  style={{
+                    backgroundColor: 'var(--theme-button-secondary-bg)',
+                    color: 'var(--theme-button-secondary-text)',
+                  }}
+                >
+                  Отмена
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно переименования Passkey */}
+      {passkeyRenameModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setPasskeyRenameModal(false)}
+        >
+          <div
+            className="rounded-lg border p-6 max-w-md w-full mx-4"
+            style={cardStyles}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--theme-content-text)' }}>
+              <Key className="w-6 h-6" />
+              Переименовать Passkey
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--theme-content-text)' }}>
+                  Название
+                </label>
+                <input
+                  type="text"
+                  value={passkeyRenameName}
+                  onChange={(e) => setPasskeyRenameName(e.target.value)}
+                  className="w-full px-3 py-2 rounded border"
+                  style={inputStyles}
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t" style={{ borderColor: 'var(--theme-card-border)' }}>
+                <button
+                  onClick={renamePasskey}
+                  className="flex-1 px-4 py-2 rounded flex items-center justify-center gap-2"
+                  style={{
+                    backgroundColor: 'var(--accent-success)',
+                    color: 'white',
+                  }}
+                >
+                  <Save className="w-4 h-4" />
+                  Сохранить
+                </button>
+                <button
+                  onClick={() => setPasskeyRenameModal(false)}
                   className="px-4 py-2 rounded"
                   style={{
                     backgroundColor: 'var(--theme-button-secondary-bg)',
