@@ -163,7 +163,7 @@ function Login() {
             {branding.name}
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit} autoComplete="on">
           <div className="rounded-md space-y-4">
             {/* Логин - всегда показываем */}
             <div>
@@ -176,41 +176,37 @@ function Login() {
               </label>
               <input
                 id="login"
+                name="login"
                 type="text"
                 autoComplete="username"
                 className="input"
-                placeholder="admin"
+                placeholder="login"
                 value={login}
                 onChange={(e) => setLogin(e.target.value)}
                 disabled={step !== 'login'}
               />
             </div>
 
-            {/* Пароль - показываем на шаге password и otp */}
-            {(step === 'password' || step === 'otp') && (
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium mb-1"
-                  style={{ color: 'var(--theme-content-text)' }}
-                >
-                  Пароль
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  className="input"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={step === 'otp'}
-                  autoFocus={step === 'password'}
-                />
-              </div>
-            )}
-
-            {/* OTP - показываем только на шаге otp */}
+            <div style={{ display: step === 'login' ? 'none' : 'block' }}>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium mb-1"
+                style={{ color: 'var(--theme-content-text)' }}
+              >
+                Пароль
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                className="input"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={step === 'otp'}
+              />
+            </div>
             {step === 'otp' && (
               <div>
                 <label
