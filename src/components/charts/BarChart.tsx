@@ -48,6 +48,8 @@ export function BarChart({
     );
   }
 
+  const chartHeight = title ? height - 30 : height;
+
   return (
     <div className="w-full" style={{ height, minHeight: height }}>
       {title && (
@@ -55,7 +57,7 @@ export function BarChart({
           {title}
         </h3>
       )}
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <RechartsBarChart
           data={data}
           layout={isVertical ? 'vertical' : 'horizontal'}

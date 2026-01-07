@@ -45,6 +45,8 @@ export function AreaLineChart({
     );
   }
 
+  const chartHeight = title ? height - 30 : height;
+
   return (
     <div className="w-full" style={{ height, minHeight: height }}>
       {title && (
@@ -52,7 +54,7 @@ export function AreaLineChart({
           {title}
         </h3>
       )}
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <LineChart
           data={data}
           margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
