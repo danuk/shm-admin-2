@@ -790,7 +790,7 @@ function ConfigurationTabs() {
           style={tabButtonStyle(activeTab === 'general')}
         >
           <Globe className="w-4 h-4" />
-          Основные
+          <span className="hidden sm:inline">Основные</span>
         </button>
         <button
           onClick={() => setActiveTab('branding')}
@@ -798,7 +798,7 @@ function ConfigurationTabs() {
           style={tabButtonStyle(activeTab === 'branding')}
         >
           <Palette className="w-4 h-4" />
-          Брендинг
+          <span className="hidden sm:inline">Брендинг</span>
         </button>
         <button
           onClick={() => setActiveTab('telegram')}
@@ -806,7 +806,7 @@ function ConfigurationTabs() {
           style={tabButtonStyle(activeTab === 'telegram')}
         >
           <Bot className="w-4 h-4" />
-          Telegram боты
+          <span className="hidden sm:inline">Telegram боты</span>
         </button>
         <button
           onClick={() => setActiveTab('otp')}
@@ -814,7 +814,7 @@ function ConfigurationTabs() {
           style={tabButtonStyle(activeTab === 'otp')}
         >
           <Shield className="w-4 h-4" />
-          OTP (2FA)
+          <span className="hidden sm:inline">OTP (2FA)</span>
         </button>
         <button
           onClick={() => setActiveTab('passkey')}
@@ -822,7 +822,7 @@ function ConfigurationTabs() {
           style={tabButtonStyle(activeTab === 'passkey')}
         >
           <Key className="w-4 h-4" />
-          Passkey
+          <span className="hidden sm:inline">Passkey</span>
         </button>
         {CloudAuth !== null && (
           <Link
@@ -834,7 +834,7 @@ function ConfigurationTabs() {
             }}
           >
             <CreditCard className="w-4 h-4" />
-            Платежные системы
+          <span className="hidden sm:inline">Платежные системы</span>
           </Link>
         )}
         <button
@@ -843,7 +843,7 @@ function ConfigurationTabs() {
           style={tabButtonStyle(activeTab === 'all')}
         >
           <List className="w-4 h-4" />
-          Все настройки
+          <span className="hidden sm:inline">Все настройки</span>
         </button>
       </div>
 
@@ -876,7 +876,7 @@ function ConfigurationTabs() {
                 }}
               >
                 <Save className="w-4 h-4" />
-                Сохранить
+                <span className="hidden sm:inline">Сохранить</span>
               </button>
             </div>
           </div>
@@ -907,7 +907,7 @@ function ConfigurationTabs() {
                 }}
               >
                 <Save className="w-4 h-4" />
-                Сохранить
+                <span className="hidden sm:inline">Сохранить</span>
               </button>
             </div>
           </div>
@@ -1241,7 +1241,7 @@ https://t.me/Name_bot?start=USER_ID
                   ) : (
                     <>
                       <Plus className="w-4 h-4" />
-                      Добавить Passkey
+                      <span className="hidden sm:inline">Добавить Passkey</span>
                     </>
                   )}
                 </button>
