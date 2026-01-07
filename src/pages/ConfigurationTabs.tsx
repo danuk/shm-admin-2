@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Settings, Save, Plus, Trash2, Bot, Globe, CreditCard, List, Palette, Shield, Copy, ExternalLink, Key, Edit2 } from 'lucide-react';
+import { Settings, Save, Plus, Trash2, Bot, Globe, CreditCard, List, Palette, Shield, ShieldOff, AlertTriangle, Copy, ExternalLink, Key, Edit2 } from 'lucide-react';
 import { shm_request, normalizeListResponse } from '../lib/shm_request';
 import toast from 'react-hot-toast';
 import DataTable, { SortDirection } from '../components/DataTable';
 import { ConfigModal, ConfigCreateModal } from '../modals';
 import Help from '../components/Help';
+import { useConfirm } from '../components/ConfirmModal';
 import { Link } from 'react-router-dom';
 import TemplateSelect from '../components/TemplateSelect';
 import QRCode from 'qrcode';
@@ -14,7 +15,7 @@ interface ConfigItem {
   value: any;
 }
 
-type TabType = 'general' | 'branding' | 'telegram' | 'otp' | 'passkey' | 'payment' | 'all';
+type TabType = 'general' | 'branding' | 'telegram' | 'security' | 'payment' | 'all';
 
 interface TelegramBot {
   token: string;
@@ -91,6 +92,7 @@ const currencies = [
 
 
 function ConfigurationTabs() {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [activeTab, setActiveTab] = useState<TabType>('general');
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<ConfigItem[]>([]);
@@ -127,6 +129,7 @@ function ConfigurationTabs() {
   const [passkeyRenameModal, setPasskeyRenameModal] = useState(false);
   const [passkeyRenameId, setPasskeyRenameId] = useState('');
   const [passkeyRenameName, setPasskeyRenameName] = useState('');
+  const [passwordAuthDisabled, setPasswordAuthDisabled] = useState(false);
 
   // Telegram боты
   const [telegramBots, setTelegramBots] = useState<Record<string, TelegramBot>>({});
@@ -188,10 +191,8 @@ function ConfigurationTabs() {
     if (activeTab === 'all') {
       fetchTableData(limit, offset, filters, sortField, sortDirection);
     }
-    if (activeTab === 'otp') {
+    if (activeTab === 'security') {
       checkOtpStatus();
-    }
-    if (activeTab === 'passkey') {
       checkPasskeyStatus();
     }
   }, [activeTab, limit, offset, filters, sortField, sortDirection]);
@@ -425,9 +426,54 @@ function ConfigurationTabs() {
         setPasskeyCredentials([]);
         setPasskeyEnabled(false);
       }
+      // Загружаем статус входа по паролю
+      await checkPasswordAuthStatus();
     } catch (error) {
       setPasskeyCredentials([]);
       setPasskeyEnabled(false);
+    }
+  };
+
+  const checkPasswordAuthStatus = async () => {
+    try {
+      const response = await shm_request('shm/v1/user/password-auth/status');
+      const data = response.data?.[0];
+      if (data) {
+        setPasswordAuthDisabled(data.password_auth_disabled || false);
+      }
+    } catch (error) {
+      console.error('Error checking password auth status:', error);
+    }
+  };
+
+  const togglePasswordAuth = async () => {
+    try {
+      if (passwordAuthDisabled) {
+        // Включаем вход по паролю
+        await shm_request('shm/v1/user/password-auth/enable', { method: 'POST' });
+        toast.success('Вход по паролю включен');
+      } else {
+        // Отключаем вход по паролю
+        if (!passkeyEnabled) {
+          toast.error('Сначала настройте Passkey');
+          return;
+        }
+        const confirmed = await confirm({
+          title: 'Отключение входа по паролю',
+          message: 'Вы уверены? Вход будет возможен только через Passkey. OTP будет отключен.',
+          confirmText: 'Отключить',
+          variant: 'warning',
+        });
+        if (!confirmed) {
+          return;
+        }
+        await shm_request('shm/v1/user/password-auth/disable', { method: 'POST' });
+        toast.success('Вход по паролю отключен. Используйте Passkey.');
+      }
+      await checkPasskeyStatus();
+      await checkOtpStatus();
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка изменения настроек');
     }
   };
 
@@ -446,7 +492,7 @@ function ConfigurationTabs() {
       // Получаем опции для регистрации
       const optionsResponse = await shm_request('shm/v1/user/passkey/register/options', { method: 'POST' });
       const options = optionsResponse.data?.[0];
-      
+
       if (!options) {
         throw new Error('Не удалось получить опции регистрации');
       }
@@ -514,7 +560,13 @@ function ConfigurationTabs() {
   };
 
   const deletePasskey = async (credentialId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить этот Passkey?')) {
+    const confirmed = await confirm({
+      title: 'Удаление Passkey',
+      message: 'Вы уверены, что хотите удалить этот Passkey?',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -655,7 +707,13 @@ function ConfigurationTabs() {
   };
 
   const deleteBot = async (botName: string) => {
-    if (!confirm(`Удалить бота "${botName}"?`)) return;
+    const confirmed = await confirm({
+      title: 'Удаление бота',
+      message: `Удалить бота "${botName}"?`,
+      confirmText: 'Удалить',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
 
     const updatedBots = { ...telegramBots };
     delete updatedBots[botName];
@@ -809,20 +867,12 @@ function ConfigurationTabs() {
           <span className="hidden sm:inline">Telegram боты</span>
         </button>
         <button
-          onClick={() => setActiveTab('otp')}
+          onClick={() => setActiveTab('security')}
           className="px-4 py-2 border-b-2 transition-colors flex items-center gap-2"
-          style={tabButtonStyle(activeTab === 'otp')}
+          style={tabButtonStyle(activeTab === 'security')}
         >
           <Shield className="w-4 h-4" />
-          <span className="hidden sm:inline">OTP (2FA)</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('passkey')}
-          className="px-4 py-2 border-b-2 transition-colors flex items-center gap-2"
-          style={tabButtonStyle(activeTab === 'passkey')}
-        >
-          <Key className="w-4 h-4" />
-          <span className="hidden sm:inline">Passkey</span>
+          <span className="hidden sm:inline">Безопасность</span>
         </button>
         {CloudAuth !== null && (
           <Link
@@ -1086,14 +1136,14 @@ https://t.me/Name_bot?start=USER_ID
           </div>
       )}
 
-      {/* Вкладка "OTP (2FA)" */}
-      {activeTab === 'otp' && (
+      {/* Вкладка "Безопасность" */}
+      {activeTab === 'security' && (
         <div className="space-y-4">
           {/* Статус OTP */}
           <div className="rounded-lg border p-6" style={cardStyles}>
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--theme-content-text)' }}>
               <Shield className="w-5 h-5" style={{ color: 'var(--accent-primary)' }} />
-              Статус двухфакторной аутентификации
+              Двухфакторная аутентификация (OTP)
             </h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -1135,12 +1185,7 @@ https://t.me/Name_bot?start=USER_ID
               </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Вкладка "Passkey" */}
-      {activeTab === 'passkey' && (
-        <div className="space-y-4">
           {/* Информация о Passkey */}
           <div className="rounded-lg border p-6" style={cardStyles}>
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--theme-content-text)' }}>
@@ -1148,10 +1193,10 @@ https://t.me/Name_bot?start=USER_ID
               Passkey (беспарольная аутентификация)
             </h3>
             <p className="text-sm mb-4" style={{ color: 'var(--theme-content-text-muted)' }}>
-              Passkey позволяет входить в систему без пароля, используя биометрию (отпечаток пальца, Face ID) 
+              Passkey позволяет входить в систему без пароля, используя биометрию (отпечаток пальца, Face ID)
               или PIN-код устройства. Это более безопасный и удобный способ аутентификации.
             </p>
-            
+
             {!isPasskeySupported() && (
               <div className="p-3 rounded border mb-4" style={{ backgroundColor: 'var(--accent-warning)', borderColor: 'var(--accent-warning)' }}>
                 <p className="text-sm text-white">
@@ -1247,6 +1292,48 @@ https://t.me/Name_bot?start=USER_ID
                 </button>
               </div>
             </div>
+
+            {/* Управление входом по паролю */}
+            {passkeyEnabled && (
+              <div className="border-t pt-4 mt-4" style={{ borderColor: 'var(--theme-card-border)' }}>
+                <h4 className="text-md font-medium mb-3" style={{ color: 'var(--theme-content-text)' }}>
+                  Режим только Passkey
+                </h4>
+                <p className="text-sm mb-4" style={{ color: 'var(--theme-content-text-muted)' }}>
+                  {passwordAuthDisabled
+                    ? 'Вход по паролю отключен. Доступен только вход через Passkey.'
+                    : 'Вы можете отключить вход по паролю и использовать только Passkey. OTP также будет отключен.'}
+                </p>
+                <button
+                  onClick={togglePasswordAuth}
+                  className="px-4 py-2 rounded flex items-center gap-2"
+                  style={{
+                    backgroundColor: passwordAuthDisabled ? 'var(--accent-success)' : 'var(--accent-danger)',
+                    color: 'white',
+                  }}
+                >
+                  {passwordAuthDisabled ? (
+                    <>
+                      <Shield className="w-4 h-4" />
+                      Включить вход по паролю
+                    </>
+                  ) : (
+                    <>
+                      <ShieldOff className="w-4 h-4" />
+                      Отключить вход по паролю
+                    </>
+                  )}
+                </button>
+                {passwordAuthDisabled && (
+                  <div className="mt-3 p-3 rounded border" style={{ backgroundColor: 'var(--accent-warning)', borderColor: 'var(--accent-warning)', opacity: 0.9 }}>
+                    <p className="text-sm text-white flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Вход по паролю отключен. Убедитесь, что Passkey работает корректно.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1957,6 +2044,8 @@ https://t.me/Name_bot?start=USER_ID
           </div>
         </div>
       )}
+
+      <ConfirmDialog />
     </div>
   );
 }

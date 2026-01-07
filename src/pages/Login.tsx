@@ -21,6 +21,7 @@ function Login() {
   const [step, setStep] = useState<LoginStep>('login');
   const [passkeyAvailable, setPasskeyAvailable] = useState(false);
   const [passkeyOptions, setPasskeyOptions] = useState<any>(null);
+  const [passwordAuthDisabled, setPasswordAuthDisabled] = useState(false);
 
   useEffect(() => {
     fetchBranding();
@@ -39,10 +40,12 @@ function Login() {
       const result = await checkPasskeyAvailable(login);
       setPasskeyAvailable(result.available);
       setPasskeyOptions(result.options || null);
+      setPasswordAuthDisabled(result.passwordAuthDisabled || false);
       setStep('password');
     } catch {
       setPasskeyAvailable(false);
       setPasskeyOptions(null);
+      setPasswordAuthDisabled(false);
       setStep('password');
     } finally {
       setIsLoading(false);
@@ -76,7 +79,7 @@ function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Если на шаге логина - проверяем passkey
     if (step === 'login') {
       await handleLoginStep();
@@ -97,7 +100,7 @@ function Login() {
     setIsLoading(true);
     try {
       const result = await shm_login(login, password, step === 'otp' ? otpToken : undefined);
-      
+
       // Если требуется OTP, показываем поле для ввода
       if (result.otpRequired) {
         setStep('otp');
@@ -105,7 +108,7 @@ function Login() {
         setIsLoading(false);
         return;
       }
-      
+
       const { user, sessionId } = result;
       setAuth(user, sessionId);
       await refetchBranding();
@@ -131,6 +134,7 @@ function Login() {
       setPassword('');
       setPasskeyAvailable(false);
       setPasskeyOptions(null);
+      setPasswordAuthDisabled(false);
     }
   };
 
@@ -187,7 +191,7 @@ function Login() {
               />
             </div>
 
-            <div style={{ display: step === 'login' ? 'none' : 'block' }}>
+            <div style={{ display: step === 'login' || passwordAuthDisabled ? 'none' : 'block' }}>
               <label
                 htmlFor="password"
                 className="block text-sm font-medium mb-1"
@@ -243,21 +247,24 @@ function Login() {
                   Назад
                 </button>
               )}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn-primary flex-1 flex justify-center items-center gap-2"
-                style={{ background: `linear-gradient(135deg, ${colors.primaryColor}, ${colors.primaryColorHover})` }}
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <LogIn className="w-5 h-5" />
-                    {step === 'login' ? 'Далее' : 'Войти'}
-                  </>
-                )}
-              </button>
+              {/* Кнопка Войти - скрываем если passwordAuthDisabled */}
+              {!(step === 'password' && passwordAuthDisabled) && (
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn-primary flex-1 flex justify-center items-center gap-2"
+                  style={{ background: `linear-gradient(135deg, ${colors.primaryColor}, ${colors.primaryColorHover})` }}
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <LogIn className="w-5 h-5" />
+                      {step === 'login' ? 'Далее' : 'Войти'}
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Кнопка входа с Passkey - показываем только на шаге password */}
@@ -266,15 +273,24 @@ function Login() {
                 type="button"
                 onClick={handlePasskeyLogin}
                 disabled={isLoading}
-                className="btn-success flex-1 flex justify-center items-center gap-2"
-                style={{
-                  borderColor: 'var(--accent-primary)',
-                  backgroundColor: 'transparent',
-                  color: 'var(--accent-primary)',
-                }}
+                className={`flex-1 flex justify-center items-center gap-2 ${passwordAuthDisabled ? 'btn-primary' : 'btn-success'}`}
+                style={passwordAuthDisabled
+                  ? { background: `linear-gradient(135deg, ${colors.primaryColor}, ${colors.primaryColorHover})` }
+                  : {
+                      borderColor: 'var(--accent-primary)',
+                      backgroundColor: 'transparent',
+                      color: 'var(--accent-primary)',
+                    }
+                }
               >
-                <Key className="w-5 h-5" />
-                Войти с Passkey
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Key className="w-5 h-5" />
+                    Войти с Passkey
+                  </>
+                )}
               </button>
             )}
           </div>

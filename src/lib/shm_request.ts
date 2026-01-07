@@ -144,7 +144,7 @@ export function arrayBufferToBase64url(buffer: ArrayBuffer): string {
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-export async function checkPasskeyAvailable(login: string): Promise<{ available: boolean; options?: any }> {
+export async function checkPasskeyAvailable(login: string): Promise<{ available: boolean; options?: any; passwordAuthDisabled?: boolean }> {
   try {
     const response = await fetch(createApiUrl('shm/v1/user/passkey/auth/options/public'), {
       method: 'POST',
@@ -160,12 +160,14 @@ export async function checkPasskeyAvailable(login: string): Promise<{ available:
 
     const data = await response.json();
     const result = data.data?.[0] || data;
-    
+
+    const passwordAuthDisabled = result.password_auth_disabled === 1;
+
     if (result.passkey_available === 0 || !result.challenge) {
-      return { available: false };
+      return { available: false, passwordAuthDisabled };
     }
 
-    return { available: true, options: result };
+    return { available: true, options: result, passwordAuthDisabled };
   } catch {
     return { available: false };
   }
@@ -174,7 +176,7 @@ export async function checkPasskeyAvailable(login: string): Promise<{ available:
 export async function authenticateWithPasskey(login: string, options: any): Promise<any> {
   // Преобразуем challenge и credential IDs
   const challenge = base64urlToArrayBuffer(options.challenge);
-  
+
   const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
     challenge,
     timeout: options.timeout,
@@ -223,7 +225,7 @@ export async function authenticateWithPasskey(login: string, options: any): Prom
 
   const authData = await authResponse.json();
   const result = authData.data?.[0] || authData;
-  
+
   if (!result.id) {
     throw new Error('Не получен session_id');
   }
