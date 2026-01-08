@@ -223,15 +223,7 @@ function DataTableTree({
   }, [onRefresh]);
 
   useEffect(() => {
-    if (externalFilters) {
-      setColumnFilters(prev => {
-        const newFilters = { ...prev };
-        Object.entries(externalFilters).forEach(([key, value]) => {
-          newFilters[key] = value;
-        });
-        return newFilters;
-      });
-    }
+    setColumnFilters(externalFilters ? { ...externalFilters } : {});
   }, [externalFilters]);
 
   useEffect(() => {
