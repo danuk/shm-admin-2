@@ -26,8 +26,28 @@ function Templates() {
     setLoading(true);
     let url = `shm/v1/admin/template?limit=${l}&offset=${o}`;
 
-    if (Object.keys(f).length > 0) {
-      url += `&filter=${encodeURIComponent(JSON.stringify(f))}`;
+    const activeFilters: Record<string, any> = {};
+    Object.entries(f).forEach(([key, value]) => {
+      if (value) {
+        // Поддержка вложенных фильтров (например event.title -> {"event":{"title":{"-like":"%value%"}}})
+        if (key.includes('.')) {
+          const parts = key.split('.');
+          let current = activeFilters;
+          for (let i = 0; i < parts.length - 1; i++) {
+            if (!current[parts[i]]) {
+              current[parts[i]] = {};
+            }
+            current = current[parts[i]];
+          }
+          current[parts[parts.length - 1]] = { '-like': value };
+        } else {
+          activeFilters[key] = { '-like': value };
+        }
+      }
+    });
+
+    if (Object.keys(activeFilters).length > 0) {
+      url += `&filter=${encodeURIComponent(JSON.stringify(activeFilters))}`;
     }
 
     if (sf && sd) {
