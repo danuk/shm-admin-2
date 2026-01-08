@@ -64,6 +64,9 @@ function App() {
     <BrowserRouter basename={basename}>
       <Toaster
         position="top-center"
+        containerStyle={{
+          zIndex: 99999,
+        }}
         toastOptions={{
           duration: 3000,
           style: {

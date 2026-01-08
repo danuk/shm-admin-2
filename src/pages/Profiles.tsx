@@ -51,7 +51,7 @@ function Profiles() {
         activeFilters[key] = value;
       }
     });
-    
+
     if (Object.keys(activeFilters).length > 0) {
       url += `&filter=${encodeURIComponent(JSON.stringify(activeFilters))}`;
     }
