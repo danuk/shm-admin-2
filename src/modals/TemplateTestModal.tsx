@@ -21,6 +21,7 @@ export default function TemplateTestModal({
   const [dryRun, setDryRun] = useState(true);
   const [rendering, setRendering] = useState(false);
   const [renderResult, setRenderResult] = useState('');
+  const [hasError, setHasError] = useState(false);
 
   const handleRender = async () => {
     if (!userId) {
@@ -29,6 +30,7 @@ export default function TemplateTestModal({
     }
 
     setRendering(true);
+    setHasError(false);
     try {
       const params = new URLSearchParams({
         user_id: String(userId),
@@ -41,10 +43,13 @@ export default function TemplateTestModal({
       }
 
       const response = await shm_request(`shm/v1/template/${templateId}?${params.toString()}`);
-      setRenderResult(response.data?.[0] || JSON.stringify(response.data, null, 2));
+      const result = response.data?.[0] || JSON.stringify(response.data, null, 2);
+      setRenderResult(result && result.trim() !== '' && result !== '[\n  ""\n]' ? result : '');
       toast.success('Успех');
-    } catch (error) {
-      toast.error('Ошибка');
+    } catch (error: any) {
+      setHasError(true);
+      toast.error('Ошибка рендера');
+      setRenderResult(JSON.stringify(error, null, 2));
     } finally {
       setRendering(false);
     }
@@ -55,6 +60,7 @@ export default function TemplateTestModal({
     setUserId(1);
     setUsi('');
     setDryRun(true);
+    setHasError(false);
     onClose();
   };
 
@@ -71,19 +77,6 @@ export default function TemplateTestModal({
   const renderFooter = () => (
     <div className="flex justify-end items-center w-full gap-2">
       <button
-        onClick={handleClose}
-        className="p-2 rounded flex items-center gap-2"
-        style={{
-          backgroundColor: 'var(--theme-button-secondary-bg)',
-          color: 'var(--theme-button-secondary-text)',
-          border: '1px solid var(--theme-button-secondary-border)',
-        }}
-        title="Закрыть"
-      >
-        <X className="w-4 h-4" />
-        <span className="hidden sm:inline">Закрыть</span>
-      </button>
-      <button
         onClick={handleRender}
         disabled={rendering || !userId}
         className="p-2 rounded flex items-center gap-2 disabled:opacity-50 btn-primary"
@@ -95,6 +88,19 @@ export default function TemplateTestModal({
       >
         <Play className="w-4 h-4" />
         <span className="hidden sm:inline">{rendering ? 'Рендер...' : 'Render'}</span>
+      </button>
+      <button
+        onClick={handleClose}
+        className="p-2 rounded flex items-center gap-2"
+        style={{
+          backgroundColor: 'var(--theme-button-secondary-bg)',
+          color: 'var(--theme-button-secondary-text)',
+          border: '1px solid var(--theme-button-secondary-border)',
+        }}
+        title="Закрыть"
+      >
+        <X className="w-4 h-4" />
+        <span className="hidden sm:inline">Закрыть</span>
       </button>
     </div>
   );
@@ -167,7 +173,13 @@ export default function TemplateTestModal({
             value={renderResult}
             readOnly
             className="flex-1 h-full px-3 py-2 text-sm rounded border font-mono"
-            style={{ ...inputStyles, resize: 'none', minHeight: 280 }}
+            style={{
+              ...inputStyles,
+              resize: 'none',
+              minHeight: 280,
+              color: hasError ? 'var(--accent-danger)' : inputStyles.color,
+              borderColor: hasError ? 'var(--accent-danger)' : inputStyles.borderColor,
+            }}
             placeholder="Результат рендера появится здесь..."
           />
         </div>
@@ -175,6 +187,3 @@ export default function TemplateTestModal({
     </Modal>
   );
 }
-
-
-
