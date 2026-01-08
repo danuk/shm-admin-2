@@ -177,7 +177,7 @@ function Layout() {
   const { sidebarCollapsed, setSidebarCollapsed } = useSettingsStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState<string[]>(() => {
-    const activeMenu = baseNavigation.find(item => 
+  const activeMenu = baseNavigation.find(item =>
       item.children?.some(child => child.href === location.pathname)
     );
     return activeMenu ? [activeMenu.name] : [];
@@ -204,7 +204,7 @@ function Layout() {
         ...baseNavigation.slice(1)
       ]
     : baseNavigation;
-  
+
   const menuItems = showSwagger
     ? [...navigation, { name: 'Swagger', href: '/swagger', icon: FileText }]
     : navigation;
@@ -212,16 +212,16 @@ function Layout() {
   useEffect(() => {
     fetchBranding();
     applyTheme();
-    
+
     // Check cloud subscription status
     const checkCloudSubscription = async () => {
       try {
         // Проверяем авторизацию в Cloud через API
         const res = await shm_request('shm/v1/admin/cloud/user');
         const userData = res.data || res;
-        
+
         const isValidUser = (Array.isArray(userData) && userData[0] !== null && userData[0].user_id);
-        
+
         if (isValidUser) {
           localStorage.setItem('cloud_auth', 'authenticated');
           try {
@@ -251,9 +251,9 @@ function Layout() {
         setHasCloudSub(false);
       }
     };
-    
+
     checkCloudSubscription();
-    
+
     // Кеш на 1 час (3600000 мс)
     const CACHE_TTL = 3600000;
     const CACHE_KEY_VERSION = 'github_shm_version';
@@ -286,7 +286,7 @@ function Layout() {
     if (isCacheValid()) {
       const cachedVersion = getCachedData(CACHE_KEY_VERSION);
       const cachedStars = getCachedData(CACHE_KEY_STARS);
-      
+
       if (cachedVersion) setVersion(cachedVersion);
       if (cachedStars) setStars(parseInt(cachedStars, 10));
     } else {
@@ -306,7 +306,7 @@ function Layout() {
           const cachedVersion = getCachedData(CACHE_KEY_VERSION);
           setVersion(cachedVersion || 'unknown');
         });
-      
+
       // Загрузка звезд с GitHub
       fetch('https://api.github.com/repos/danuk/shm')
         .then(res => res.json())
@@ -320,7 +320,7 @@ function Layout() {
           setStars(cachedStars ? parseInt(cachedStars, 10) : null);
         });
     }
-    
+
     const handleOpenTemplate = (event: any) => {
       setSelectedData(event.detail);
       setTemplateModalOpen(true);
@@ -344,10 +344,10 @@ function Layout() {
 
   // Автоматическое открытие активного меню при изменении пути
   useEffect(() => {
-    const activeMenu = navigation.find(item => 
+    const activeMenu = navigation.find(item =>
       item.children?.some(child => child.href === location.pathname)
     );
-    
+
     if (activeMenu && !manuallyClosed.includes(activeMenu.name)) {
       setOpenMenus(prev => {
         if (!prev.includes(activeMenu.name)) {
@@ -731,7 +731,7 @@ function Layout() {
           <Outlet />
         </main>
       </div>
-            {/* Global Template Modal */}
+      {/* Global Template Modal */}
       <TemplateModal
         open={templateModalOpen}
         onClose={() => setTemplateModalOpen(false)}

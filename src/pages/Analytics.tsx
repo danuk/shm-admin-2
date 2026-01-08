@@ -96,7 +96,7 @@ function Analytics() {
   // Подготовка данных для графика выручки (с учётом гранулярности)
   const revenueChartData = (() => {
     if (!analytics) return [];
-    
+
     // Используем revenue_timeline если есть (по дням/неделям)
     if (analytics.revenue_timeline && analytics.revenue_timeline.length > 0) {
       return analytics.revenue_timeline.map((item) => ({
@@ -105,10 +105,10 @@ function Analytics() {
         label: formatTimelineLabel(item as TimelineDataDay | TimelineDataWeek | TimelineDataMonth),
       }));
     }
-    
+
     // Fallback на revenue_by_month (с защитой от null)
     if (!analytics.revenue_by_month || !Array.isArray(analytics.revenue_by_month)) return [];
-    
+
     return analytics.revenue_by_month
       .slice()
       .reverse()
@@ -120,14 +120,14 @@ function Analytics() {
   })();
 
   // Определяем реальную гранулярность для графика выручки
-  const revenueGranularity: Granularity = (analytics?.revenue_timeline && analytics.revenue_timeline.length > 0) 
-    ? apiGranularity 
+  const revenueGranularity: Granularity = (analytics?.revenue_timeline && analytics.revenue_timeline.length > 0)
+    ? apiGranularity
     : 'month';
 
   // Подготовка данных для графика начислений (с учётом гранулярности)
   const chargesChartData = (() => {
     if (!analytics) return [];
-    
+
     // Используем charges_timeline если есть (по дням/неделям)
     if (analytics.charges_timeline && analytics.charges_timeline.length > 0) {
       return analytics.charges_timeline.map((item) => ({
@@ -136,11 +136,11 @@ function Analytics() {
         label: formatTimelineLabel(item as TimelineDataDay | TimelineDataWeek | TimelineDataMonth),
       }));
     }
-    
+
     // Fallback на charges_by_month (с защитой от null)
     const chargesByMonth = analytics.charges?.charges_by_month;
     if (!chargesByMonth || !Array.isArray(chargesByMonth)) return [];
-    
+
     return chargesByMonth
       .slice()
       .reverse()
@@ -173,8 +173,8 @@ function Analytics() {
     ?.filter((s) => s?.active_subscriptions > 0)
     .slice(0, 5)
     .map((item) => ({
-      name: (item?.service_name || 'Unknown').length > 20 
-        ? (item?.service_name || 'Unknown').slice(0, 20) + '...' 
+      name: (item?.service_name || 'Unknown').length > 20
+        ? (item?.service_name || 'Unknown').slice(0, 20) + '...'
         : (item?.service_name || 'Unknown'),
       value: item?.active_subscriptions || 0,
     })) || [];
@@ -208,7 +208,7 @@ function Analytics() {
             className="btn-secondary flex items-center gap-2"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Обновить
+            <span className="hidden sm:inline">Обновить</span>
           </button>
         </div>
       </div>

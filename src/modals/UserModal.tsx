@@ -98,7 +98,7 @@ export default function UserModal({
   const renderFooter = () => (
     <div className="flex flex-col sm:flex-row justify-between w-full gap-2">
       <div>
-        {onDelete && (
+        {onDelete && formData.user_id !== 1 && (
           <button
             onClick={handleDelete}
             disabled={deleting}
@@ -111,6 +111,7 @@ export default function UserModal({
         )}
       </div>
       <div className="flex gap-2 flex-wrap justify-end">
+        { onCliLogin && (
           <button
             onClick={onCliLogin}
             className="p-2 rounded flex items-center gap-2"
@@ -124,6 +125,7 @@ export default function UserModal({
             <User className="w-4 h-4" />
             <span className="hidden sm:inline">В кабинет</span>
           </button>
+        )}
         {onChangePassword && (
           <button
             onClick={onChangePassword}
@@ -376,7 +378,7 @@ export default function UserModal({
             />
           </div>
         </div>
-
+        { formData.user_id !== 1 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="flex items-center gap-3">
             <label className="w-28 text-sm font-medium shrink-0" style={labelStyles}>
@@ -397,7 +399,7 @@ export default function UserModal({
             </label>
           </div>
         </div>
-
+        )}
         <div className="pt-2">
           <label className="text-sm font-medium" style={labelStyles}>
             Settings
@@ -435,6 +437,11 @@ export default function UserModal({
             body: JSON.stringify(dataWithUser),
           });
 
+          const updatedUser = await shm_request(`shm/v1/admin/user?user_id=${formData.user_id}`);
+          if (updatedUser.data && updatedUser.data[0]) {
+            setFormData(updatedUser.data[0]);
+          }
+
           setPayModalOpen(false);
           if (onRefresh) {
             await onRefresh();
@@ -451,6 +458,11 @@ export default function UserModal({
             method: 'PUT',
             body: JSON.stringify(dataWithUser),
           });
+
+          const updatedUser = await shm_request(`shm/v1/admin/user?user_id=${formData.user_id}`);
+          if (updatedUser.data && updatedUser.data[0]) {
+            setFormData(updatedUser.data[0]);
+          }
 
           setBonusModalOpen(false);
           if (onRefresh) {
