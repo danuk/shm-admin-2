@@ -25,6 +25,7 @@ interface Column {
   visible: boolean;
   width?: number;
   sortable?: boolean;
+  filterable?: boolean;
   render?: (value: any, row: any) => React.ReactNode;
   filterType?: 'text' | 'select';
   filterOptions?: Array<{ value: string; label: string }>;
@@ -619,7 +620,7 @@ function DataTable({
                       cursor: canSort ? 'pointer' : 'grab',
                       backgroundColor: isSorted ? 'var(--theme-primary-color)' : undefined,
                     }}
-                    onClick={() => handleSortClick(col)}
+                    onClick={() => canSort && handleSortClick(col)}
                   >
                     <div className="flex items-center gap-2">
                       <GripVertical
@@ -674,7 +675,7 @@ function DataTable({
                     borderBottom: '1px solid var(--theme-table-border)',
                   }}
                 >
-                  {col.filterType === 'select' && col.filterOptions ? (
+                  {col.filterable === false ? null : col.filterType === 'select' && col.filterOptions ? (
                     <div className="relative">
                       <select
                         value={columnFilters[col.filterKey || col.key] || ''}
