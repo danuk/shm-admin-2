@@ -20,6 +20,7 @@ ARG BACKEND_REPO=""
 COPY generate-version.sh ./
 RUN apk add --no-cache git && \
     chmod +x generate-version.sh && \
+    mkdir -p /app/public && \
     FRONTEND_VERSION=${FRONTEND_VERSION} \
     BACKEND_COMMIT_SHA=${BACKEND_COMMIT_SHA} \
     BACKEND_BRANCH=${BACKEND_BRANCH} \
