@@ -59,7 +59,7 @@ jobs:
           context: .
           push: true
           build-args: |
-            FRONTEND_VERSION=${{ steps.backend.outputs.minor }}
+            FRONTEND_VERSION=${{ steps.version.outputs.minor }}
             BACKEND_COMMIT_SHA=${{ steps.backend.outputs.sha }}
             BACKEND_BRANCH=${{ steps.backend.outputs.branch }}
             BACKEND_COMMIT_URL=${{ steps.backend.outputs.url }}
