@@ -11,6 +11,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 src/version
+public/version.json
 .DS_Store
 .idea
 .vscode

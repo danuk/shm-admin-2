@@ -31,7 +31,6 @@ export const useBrandingStore = create<BrandingState>((set, get) => ({
 
     set({ loading: true });
     try {
-      // Получаем настройки компании из SHM API
       const result = await shm_request('shm/v1/company');
       if (result.status === 200 && result.data?.[0]) {
         const company = result.data[0];

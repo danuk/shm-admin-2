@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import SelectedUserDropdown from './SelectedUserDropdown';
+import { VersionBadge } from './VersionBadge';
 import {
   Users,
   Package,
@@ -187,13 +188,11 @@ function Layout() {
   const [menuPosition, setMenuPosition] = useState<{ top: number } | null>(null);
   const [selectedData, setSelectedData] = useState<any>(null);
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
-  const [version, setVersion] = useState<string>('');
   const [stars, setStars] = useState<number | null>(null);
   const [hasCloudSub, setHasCloudSub] = useState<boolean>(() => {
     return localStorage.getItem('cloud_sub') === 'active';
   });
   const hoverTimeoutRef = useRef<number | null>(null);
-  const local_version = localStorage.getItem('version') || null;
 
   const showSwagger = import.meta.env.VITE_SHOW_SWAGGER === 'true';
 
@@ -284,10 +283,8 @@ function Layout() {
 
     // Проверяем кеш
     if (isCacheValid()) {
-      const cachedVersion = getCachedData(CACHE_KEY_VERSION);
       const cachedStars = getCachedData(CACHE_KEY_STARS);
 
-      if (cachedVersion) setVersion(cachedVersion);
       if (cachedStars) setStars(parseInt(cachedStars, 10));
     } else {
       // Загрузка версии из GitHub tags
@@ -297,14 +294,9 @@ function Layout() {
           const validTags = data.filter((tag: any) => tag.name !== 'delete');
           if (validTags.length > 0) {
             const newVersion = validTags[0].name;
-            setVersion(newVersion);
             setCachedData(CACHE_KEY_VERSION, newVersion);
             setCachedData(CACHE_KEY_TIMESTAMP, Date.now().toString());
           }
-        })
-        .catch(() => {
-          const cachedVersion = getCachedData(CACHE_KEY_VERSION);
-          setVersion(cachedVersion || 'unknown');
         });
 
       // Загрузка звезд с GitHub
@@ -687,16 +679,7 @@ function Layout() {
             >
               <Send className="w-5 h-5" />
             </a>
-            {version !== null && (
-              <span
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-sm transition-all"
-                style={{
-                  color: 'var(--theme-content-text-muted)'
-                }}
-              >
-                <span>{local_version || version}</span>
-              </span>
-            )}
+            <VersionBadge />
             {stars !== null && (
               <a
                 href="https://github.com/danuk/shm"

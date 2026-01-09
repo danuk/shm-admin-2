@@ -36,11 +36,34 @@ jobs:
             echo "minor=${TAG}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Get backend info
+        id: backend
+        run: |
+          BACKEND_REPO="danuk/shm"
+          echo "repo=${BACKEND_REPO}" >> $GITHUB_OUTPUT
+
+          REPO_INFO=$(curl -s "https://api.github.com/repos/${BACKEND_REPO}")
+          BACKEND_BRANCH=$(echo "$REPO_INFO" | jq -r '.default_branch // "master"')
+          echo "branch=${BACKEND_BRANCH}" >> $GITHUB_OUTPUT
+
+          BACKEND_INFO=$(curl -s "https://api.github.com/repos/${BACKEND_REPO}/commits/${BACKEND_BRANCH}")
+          BACKEND_SHA=$(echo "$BACKEND_INFO" | jq -r '.sha // "unknown"')
+          BACKEND_URL="https://github.com/${BACKEND_REPO}/commit/${BACKEND_SHA}"
+
+          echo "sha=${BACKEND_SHA}" >> $GITHUB_OUTPUT
+          echo "url=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          build-args: |
+            FRONTEND_VERSION=${{ steps.backend.outputs.minor }}
+            BACKEND_COMMIT_SHA=${{ steps.backend.outputs.sha }}
+            BACKEND_BRANCH=${{ steps.backend.outputs.branch }}
+            BACKEND_COMMIT_URL=${{ steps.backend.outputs.url }}
+            BACKEND_REPO=${{ steps.backend.outputs.repo }}
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/shm-admin:${{ steps.version.outputs.minor }}
             ${{ secrets.DOCKERHUB_USERNAME }}/shm-admin:latest
