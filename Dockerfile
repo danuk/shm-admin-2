@@ -21,11 +21,11 @@ COPY generate-version.sh ./
 RUN apk add --no-cache git && \
     chmod +x generate-version.sh && \
     mkdir -p /app/public && \
-    FRONTEND_VERSION=${FRONTEND_VERSION} \
-    BACKEND_COMMIT_SHA=${BACKEND_COMMIT_SHA} \
-    BACKEND_BRANCH=${BACKEND_BRANCH} \
-    BACKEND_COMMIT_URL=${BACKEND_COMMIT_URL} \
-    BACKEND_REPO=${BACKEND_REPO} \
+    env FRONTEND_VERSION="${FRONTEND_VERSION}" \
+        BACKEND_COMMIT_SHA="${BACKEND_COMMIT_SHA}" \
+        BACKEND_BRANCH="${BACKEND_BRANCH}" \
+        BACKEND_COMMIT_URL="${BACKEND_COMMIT_URL}" \
+        BACKEND_REPO="${BACKEND_REPO}" \
     ./generate-version.sh /app/public/version.json
 
 RUN npm run build
