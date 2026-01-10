@@ -364,19 +364,19 @@ function Analytics() {
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Средний LTV</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics ? formatMoney(analytics.ltv.avg_ltv) : '...'}
+                {analytics?.ltv ? formatMoney(analytics.ltv.avg_ltv) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Ср. чек</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics ? formatMoney(analytics.ltv.avg_payment_amount) : '...'}
+                {analytics?.ltv ? formatMoney(analytics.ltv.avg_payment_amount) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Платежей/клиент</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.ltv.avg_payments_per_user ?? '...'}
+                {analytics?.ltv?.avg_payments_per_user ?? '...'}
               </span>
             </div>
           </div>
@@ -392,19 +392,19 @@ function Analytics() {
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Renewal Rate</span>
               <span className="font-medium text-emerald-400">
-                {analytics ? formatPercent(analytics.renewal.renewal_rate) : '...'}
+                {analytics?.renewal ? formatPercent(analytics.renewal.renewal_rate) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Продлено услуг</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.renewal.renewed_services ?? '...'} / {analytics?.renewal.total_services ?? '...'}
+                {analytics?.renewal?.renewed_services ?? '...'} / {analytics?.renewal?.total_services ?? '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Ср. срок услуги</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.renewal.avg_service_lifetime_days ?? '...'} дн.
+                {analytics?.renewal?.avg_service_lifetime_days ?? '...'} дн.
               </span>
             </div>
           </div>
@@ -419,17 +419,17 @@ function Analytics() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Новых</span>
-              <span className="font-medium text-emerald-400">+{analytics?.churn.new_users ?? '...'}</span>
+              <span className="font-medium text-emerald-400">+{analytics?.churn?.new_users ?? '...'}</span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Платящих</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.churn.paying_users ?? '...'}
+                {analytics?.churn?.paying_users ?? '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Заблокировано</span>
-              <span className="font-medium text-rose-400">{analytics?.churn.churned_users ?? '...'}</span>
+              <span className="font-medium text-rose-400">{analytics?.churn?.churned_users ?? '...'}</span>
             </div>
           </div>
         </div>
@@ -444,19 +444,19 @@ function Analytics() {
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Ожидают оплаты</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.billing_efficiency.services_waiting_for_pay ?? '...'}
+                {analytics?.billing_efficiency?.services_waiting_for_pay ?? '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Ср. время оплаты</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.billing_efficiency.avg_payment_delay_hours ?? '...'} ч.
+                {analytics?.billing_efficiency?.avg_payment_delay_hours ?? '...'} ч.
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Заблокировано</span>
               <span className="font-medium text-rose-400">
-                {analytics?.billing_efficiency.services_blocked ?? '...'}
+                {analytics?.billing_efficiency?.services_blocked ?? '...'}
               </span>
             </div>
           </div>
@@ -587,19 +587,19 @@ function Analytics() {
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Фактический %</span>
               <span className="font-medium text-amber-400">
-                {analytics ? formatPercent(analytics.bonus_metrics.actual_percent) : '...'}
+                {analytics?.bonus_metrics ? formatPercent(analytics.bonus_metrics.actual_percent) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>% партнерского</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics ? formatPercent(analytics.bonus_metrics.partner_percent) : '...'}
+                {analytics?.bonus_metrics ? formatPercent(analytics.bonus_metrics.partner_percent) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Начислено</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics ? formatBonus(analytics.bonus_metrics.accrued_bonuses) : '...'}
+                {analytics?.bonus_metrics ? formatBonus(analytics.bonus_metrics.accrued_bonuses) : '...'}
               </span>
             </div>
           </div>
@@ -614,19 +614,19 @@ function Analytics() {
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Бонусная нагрузка</span>
               <span className="font-medium text-violet-400">
-                {analytics ? formatPercent(analytics.bonus_metrics.bonus_load_percent) : '...'}
+                {analytics?.bonus_metrics ? formatPercent(analytics.bonus_metrics.bonus_load_percent) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Использовано</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics ? formatBonus(analytics.bonus_metrics.used_bonuses) : '...'}
+                {analytics?.bonus_metrics ? formatBonus(analytics.bonus_metrics.used_bonuses) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>От оборота</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics ? formatMoney(analytics.bonus_metrics.total_revenue) : '...'}
+                {analytics?.bonus_metrics ? formatMoney(analytics.bonus_metrics.total_revenue) : '...'}
               </span>
             </div>
           </div>
@@ -642,19 +642,19 @@ function Analytics() {
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Бонусный долг</span>
               <span className="font-medium text-rose-400">
-                {analytics ? formatBonus(analytics.bonus_metrics.bonus_debt) : '...'}
+                {analytics?.bonus_metrics ? formatBonus(analytics.bonus_metrics.bonus_debt) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Доля долга</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics ? formatPercent(analytics.bonus_metrics.debt_share_percent) : '...'}
+                {analytics?.bonus_metrics ? formatPercent(analytics.bonus_metrics.debt_share_percent) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Начислено</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics ? formatBonus(analytics.bonus_metrics.accrued_bonuses) : '...'}
+                {analytics?.bonus_metrics ? formatBonus(analytics.bonus_metrics.accrued_bonuses) : '...'}
               </span>
             </div>
           </div>
@@ -750,10 +750,10 @@ function Analytics() {
             <Help content="<b>Дебиторская задолженность</b><br/><br/>Сумма долгов клиентов с отрицательным балансом.<br/><br/>Это клиенты, которые должны вам деньги (их баланс в минусе).<br/><br/><b>Возрастная структура долга:</b><br/>• < 30 дней — свежие долги<br/>• 30-90 дней — проблемные<br/>• > 90 дней — вероятно безнадёжные<br/><br/>Рекомендуется следить за этим показателем и работать с должниками." />
           </div>
           <div className="text-3xl font-bold text-amber-400 mb-2">
-            {analytics ? formatMoney(analytics.receivables.total_debt) : '...'}
+            {analytics?.receivables ? formatMoney(analytics.receivables.total_debt) : '...'}
           </div>
           <p style={{ color: 'var(--theme-content-text-muted)' }}>
-            {analytics?.receivables.debtors_count ?? 0} должников
+            {analytics?.receivables?.debtors_count ?? 0} должников
           </p>
           {analytics?.receivables.debt_aging && analytics.receivables.debt_aging.length > 0 && (
             <div className="mt-4 space-y-2">
@@ -776,7 +776,7 @@ function Analytics() {
             <Help content="<b>Баланс клиентов</b><br/><br/>Общая сумма денег на балансах всех активных клиентов.<br/><br/>Это средства, которые уже получены, но ещё не списаны за услуги.<br/><br/><b>Бонусы</b> — отдельный бонусный баланс клиентов (начисления по партнёрской программе и акциям)." />
           </div>
           <div className="text-3xl font-bold text-emerald-400 mb-2">
-            {analytics ? formatMoney(analytics.overview.total_balance) : '...'}
+            {analytics?.overview ? formatMoney(analytics.overview.total_balance) : '...'}
           </div>
           <p style={{ color: 'var(--theme-content-text-muted)' }}>
             Общий баланс активных клиентов
@@ -785,7 +785,7 @@ function Analytics() {
             <div className="flex justify-between text-sm">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Бонусы</span>
               <span className="text-violet-400">
-                {analytics ? formatBonus(analytics.overview.total_bonus) : '...'}
+                {analytics?.overview ? formatBonus(analytics.overview.total_bonus) : '...'}
               </span>
             </div>
           </div>
@@ -801,19 +801,19 @@ function Analytics() {
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Ср. платёж</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics ? formatMoney(analytics.revenue.avg_payment) : '...'}
+                {analytics?.revenue ? formatMoney(analytics.revenue.avg_payment) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Ср. время жизни клиента</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.ltv.avg_customer_lifetime_months ?? '...'} мес.
+                {analytics?.ltv?.avg_customer_lifetime_months ?? '...'} мес.
               </span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: 'var(--theme-content-text-muted)' }}>Ср. срок услуги</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.renewal.avg_service_lifetime_days ?? '...'} дн.
+                {analytics?.renewal?.avg_service_lifetime_days ?? '...'} дн.
               </span>
             </div>
           </div>
