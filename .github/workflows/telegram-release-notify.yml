@@ -83,13 +83,13 @@ jobs:
           # Ограничиваем количество коммитов (последние 100)
           if [ -n "$COMMITS" ]; then
             COMMITS=$(echo "$COMMITS" | head -100)
-            COMMITS_SECTION="\n\n🔧 Изменения в коде:\n$COMMITS"
+            COMMITS_SECTION="$COMMITS"
           else
-            COMMITS_SECTION=""
+            COMMITS_SECTION="Нет изменений в коде"
           fi
 
           # Форматирование сообщения (используем plain text без Markdown)
-          MESSAGE="${EMOJI} ${RELEASE_TYPE} ${TAG_NAME}\n\n📦 Репозиторий: ${REPO_NAME}\n\n📋 Changelog:\n${BODY}${COMMITS_SECTION}\n\n🔗 Посмотреть релиз: ${REPO_URL}/releases/tag/${TAG_NAME}"
+          MESSAGE="${EMOJI} ${RELEASE_TYPE} ${TAG_NAME}\n\n📦 Репозиторий: ${REPO_NAME}\n\n📋 Changelog:\n${COMMITS_SECTION}\n\n🔗 Посмотреть релиз: ${REPO_URL}/releases/tag/${TAG_NAME}"
 
           # Escape the message for JSON
           MESSAGE=$(echo "$MESSAGE" | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
