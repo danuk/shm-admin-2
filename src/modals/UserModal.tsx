@@ -228,8 +228,14 @@ export default function UserModal({
             <input
               type="text"
               value={formData.settings?.telegram?.username || formData.settings?.telegram?.login || ''}
-              disabled
-              className="flex-1 px-3 py-2 text-sm rounded border opacity-60"
+              onChange={(e) => handleChange('settings', {
+                ...formData.settings,
+                telegram: {
+                  ...formData.settings?.telegram,
+                  username: e.target.value
+                }
+              })}
+              className="flex-1 px-3 py-2 text-sm rounded border"
               style={inputStyles}
             />
           </div>
