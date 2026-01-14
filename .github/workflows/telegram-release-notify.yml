@@ -66,15 +66,8 @@ jobs:
             RELEASE_TYPE="Релиз"
           fi
 
-          # Форматирование сообщения (экранируем специальные символы для Markdown)
-          ESCAPED_REPO_NAME=$(echo "$REPO_NAME" | sed 's/[_*\[\]()~`>#+=|{}.!-]/\\&/g')
-          ESCAPED_TAG_NAME=$(echo "$TAG_NAME" | sed 's/[_*\[\]()~`>#+=|{}.!-]/\\&/g')
-          ESCAPED_RELEASE_TYPE=$(echo "$RELEASE_TYPE" | sed 's/[_*\[\]()~`>#+=|{}.!-]/\\&/g')
-
-          # Форматирование тела сообщения - убираем markdown из changelog для безопасности
-          SAFE_BODY=$(echo "$BODY" | sed 's/[_*\[\]()~`>#+=|{}.!-]/\\&/g')
-
-          MESSAGE="${EMOJI} *${ESCAPED_RELEASE_TYPE} ${ESCAPED_TAG_NAME}*\n\n📦 *Репозиторий:* ${ESCAPED_REPO_NAME}\n\n📋 *Changelog:*\n${SAFE_BODY}\n\n🔗 [Посмотреть релиз](${REPO_URL}/releases/tag/${TAG_NAME})"
+# Форматирование сообщения (используем plain text без Markdown)
+          MESSAGE="${EMOJI} ${RELEASE_TYPE} ${TAG_NAME}\n\n📦 Репозиторий: ${REPO_NAME}\n\n📋 Changelog:\n${BODY}\n\n🔗 Посмотреть релиз: ${REPO_URL}/releases/tag/${TAG_NAME}"
 
           # Escape the message for JSON
           MESSAGE=$(echo "$MESSAGE" | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
@@ -106,7 +99,6 @@ jobs:
             -d "{
               \"chat_id\": \"${TELEGRAM_CHAT_ID}\",
               \"text\": \"${MESSAGE}\",
-              \"parse_mode\": \"Markdown\",
               \"disable_web_page_preview\": false
             }")
 
