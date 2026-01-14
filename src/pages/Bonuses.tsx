@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import DataTable, { SortDirection } from '../components/DataTable';
 import Help from '../components/Help';
 import { shm_request, normalizeListResponse } from '../lib/shm_request';
+import { buildApiFilters, appendFilterToUrl } from '../lib/filterUtils';
 import { BonusModal, BonusCreateModal } from '../modals';
 import { Plus } from 'lucide-react';
 import { useSelectedUserStore } from '../store/selectedUserStore';
@@ -46,29 +47,8 @@ function Bonuses() {
     setLoading(true);
     let url = `shm/v1/admin/user/bonus?limit=${l}&offset=${o}`;
 
-    const activeFilters: Record<string, any> = {};
-    Object.entries(f).forEach(([key, value]) => {
-      if (value) {
-        const filterValue = fm === 'like' ? { '-like': `%${value}%` } : value;
-        if (key.includes('.')) {
-          const parts = key.split('.');
-          let current = activeFilters;
-          for (let i = 0; i < parts.length - 1; i++) {
-            if (!current[parts[i]]) {
-              current[parts[i]] = {};
-            }
-            current = current[parts[i]];
-          }
-          current[parts[parts.length - 1]] = filterValue;
-        } else {
-          activeFilters[key] = filterValue;
-        }
-      }
-    });
-
-    if (Object.keys(activeFilters).length > 0) {
-      url += `&filter=${encodeURIComponent(JSON.stringify(activeFilters))}`;
-    }
+    const activeFilters = buildApiFilters(f, fm, externalFilters);
+    url = appendFilterToUrl(url, activeFilters);
 
     if (sf && sd) {
       url += `&sort_field=${sf}&sort_direction=${sd}`;
@@ -81,7 +61,7 @@ function Bonuses() {
       })
       .catch(() => setData([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [externalFilters]);
 
   useEffect(() => {
     fetchData(limit, offset, filters, filterMode, sortField, sortDirection);

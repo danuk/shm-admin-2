@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Settings, Save, Plus, Trash2, Bot, Globe, CreditCard, List, Palette, Shield, ShieldOff, AlertTriangle, Copy, ExternalLink, Key, Edit2 } from 'lucide-react';
 import { shm_request, normalizeListResponse } from '../lib/shm_request';
+import { buildApiFilters, appendFilterToUrl } from '../lib/filterUtils';
 import toast from 'react-hot-toast';
 import DataTable, { SortDirection } from '../components/DataTable';
 import { ConfigModal, ConfigCreateModal } from '../modals';
@@ -217,29 +218,8 @@ function ConfigurationTabs() {
     setTableLoading(true);
     let url = `shm/v1/admin/config?limit=${l}&offset=${o}`;
 
-    const activeFilters: Record<string, any> = {};
-    Object.entries(f).forEach(([key, value]) => {
-      if (value) {
-        const filterValue = fm === 'like' ? { '-like': `%${value}%` } : value;
-        if (key.includes('.')) {
-          const parts = key.split('.');
-          let current = activeFilters;
-          for (let i = 0; i < parts.length - 1; i++) {
-            if (!current[parts[i]]) {
-              current[parts[i]] = {};
-            }
-            current = current[parts[i]];
-          }
-          current[parts[parts.length - 1]] = filterValue;
-        } else {
-          activeFilters[key] = filterValue;
-        }
-      }
-    });
-
-    if (Object.keys(activeFilters).length > 0) {
-      url += `&filter=${encodeURIComponent(JSON.stringify(activeFilters))}`;
-    }
+    const activeFilters = buildApiFilters(f, fm);
+    url = appendFilterToUrl(url, activeFilters);
 
     if (sf && sd) {
       url += `&sort_field=${sf}&sort_direction=${sd}`;
