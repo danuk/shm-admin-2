@@ -17,7 +17,7 @@ export function buildApiFilters(
     let filterValue: any;
 
     if (ALWAYS_LIKE_FIELDS.includes(key)) {
-      filterValue = { '-like': `%${value}%` };
+      filterValue = `%${value}%`;
     } else if (EXACT_WHEN_USER_SELECTED.includes(key) && selectedUserId) {
       filterValue = value;
     } else {
