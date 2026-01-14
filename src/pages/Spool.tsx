@@ -14,7 +14,7 @@ const spoolColumns = [
     label: 'Событие',
     visible: true,
     sortable: true,
-    filterKey: 'event.title',
+    filterKey: 'event.name',
     render: (value: any, row: any) => row?.event?.name || null
   },
   {

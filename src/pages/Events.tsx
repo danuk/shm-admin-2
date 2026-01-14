@@ -8,7 +8,7 @@ import { Plus } from 'lucide-react';
 const eventColumns = [
   { key: 'title', label: 'Название', visible: true, sortable: true },
   { key: 'name', label: 'Событие', visible: true, sortable: true },
-  { key: 'category', label: 'Категория', visible: true, sortable: false },
+  { key: 'category', label: 'Категория', visible: true, sortable: true, filterKey: 'settings.category', },
   { key: 'id', label: 'ID', visible: false, sortable: true },
   { key: 'kind', label: 'Тип', visible: false, sortable: true },
   { key: 'server_gid', label: 'Группа серверов', visible: false, sortable: true },
