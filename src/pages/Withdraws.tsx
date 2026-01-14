@@ -53,7 +53,7 @@ function Withdraws() {
     setLoading(true);
     let url = `shm/v1/admin/user/service/withdraw?limit=${l}&offset=${o}`;
 
-    const activeFilters = buildApiFilters(f, fm, externalFilters);
+    const activeFilters = buildApiFilters(f, fm, selectedUser?.user_id);
     url = appendFilterToUrl(url, activeFilters);
 
     if (sf && sd) {
