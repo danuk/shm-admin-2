@@ -21,7 +21,7 @@ export function buildApiFilters(
     } else if (EXACT_WHEN_USER_SELECTED.includes(key) && selectedUserId) {
       filterValue = value;
     } else {
-      filterValue = filterMode === 'exact' ? value : { '-like': `%${value}%` };
+      filterValue = filterMode === 'exact' ? `%${value}%` : { '-like': `%${value}%` };
     }
 
     // Поддержка вложенных ключей (например, 'event.title')
