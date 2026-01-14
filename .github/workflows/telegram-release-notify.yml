@@ -66,7 +66,7 @@ jobs:
             RELEASE_TYPE="Релиз"
           fi
 
-# Форматирование сообщения (используем plain text без Markdown)
+          # Форматирование сообщения (используем plain text без Markdown)
           MESSAGE="${EMOJI} ${RELEASE_TYPE} ${TAG_NAME}\n\n📦 Репозиторий: ${REPO_NAME}\n\n📋 Changelog:\n${BODY}\n\n🔗 Посмотреть релиз: ${REPO_URL}/releases/tag/${TAG_NAME}"
 
           # Escape the message for JSON
