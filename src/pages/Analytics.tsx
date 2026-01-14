@@ -579,26 +579,26 @@ function Analytics() {
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-3">
             <PieChart className="w-5 h-5 text-amber-400" />
-            <span className="font-semibold" style={{ color: 'var(--theme-content-text)' }}>% Фактический процент</span>
-            <Help content="<b>Фактический процент партнерских начислений</b><br/><br/>Показывает реальный процент начисленных бонусов от возможных.<br/><br/><b>Формула:</b> Начисленные бонусы / (Общий оборот × % партнерского начисления)<br/><br/>Если партнерский процент 15%, но фактически начислено 4%, это означает, что не все платежи привели к бонусам (например, прямые платежи без партнера)." />
+            <span className="font-semibold" style={{ color: 'var(--theme-content-text)' }}>🤝 Партнёрские бонусы</span>
+            <Help content="<b>Партнёрские бонусы</b><br/><br/>Показывает долю бонусов, начисленных по партнёрской программе.<br/><br/><b>% партнёрских</b> — какой процент от всех начисленных бонусов составляют партнёрские (с привязкой к реферальной программе).<br/><br/><b>Всего начислено</b> — общая сумма всех бонусов за период<br/><b>От партнёров</b> — бонусы, начисленные за рефералов" />
           </div>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span style={{ color: 'var(--theme-content-text-muted)' }}>Фактический %</span>
+              <span style={{ color: 'var(--theme-content-text-muted)' }}>% партнёрских</span>
               <span className="font-medium text-amber-400">
-                {analytics?.bonus_metrics ? formatPercent(analytics.bonus_metrics.actual_percent) : '...'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span style={{ color: 'var(--theme-content-text-muted)' }}>% партнерского</span>
-              <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
                 {analytics?.bonus_metrics ? formatPercent(analytics.bonus_metrics.partner_percent) : '...'}
               </span>
             </div>
             <div className="flex justify-between">
-              <span style={{ color: 'var(--theme-content-text-muted)' }}>Начислено</span>
+              <span style={{ color: 'var(--theme-content-text-muted)' }}>Всего начислено</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.bonus_metrics ? formatBonus(analytics.bonus_metrics.accrued_bonuses) : '...'}
+                {analytics?.bonus_metrics ? formatBonus(analytics.bonus_metrics.total_bonuses) : '...'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span style={{ color: 'var(--theme-content-text-muted)' }}>От партнёров</span>
+              <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
+                {analytics?.bonus_metrics ? formatBonus(analytics.bonus_metrics.partner_bonuses) : '...'}
               </span>
             </div>
           </div>
@@ -651,9 +651,9 @@ function Analytics() {
               </span>
             </div>
             <div className="flex justify-between">
-              <span style={{ color: 'var(--theme-content-text-muted)' }}>Начислено</span>
+              <span style={{ color: 'var(--theme-content-text-muted)' }}>Всего начислено</span>
               <span className="font-medium" style={{ color: 'var(--theme-content-text)' }}>
-                {analytics?.bonus_metrics ? formatBonus(analytics.bonus_metrics.accrued_bonuses) : '...'}
+                {analytics?.bonus_metrics ? formatBonus(analytics.bonus_metrics.total_bonuses) : '...'}
               </span>
             </div>
           </div>

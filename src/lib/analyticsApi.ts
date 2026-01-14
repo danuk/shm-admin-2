@@ -190,12 +190,11 @@ export interface AnalyticsReport {
     period_months: number;
   };
   bonus_metrics: {
-    accrued_bonuses: string;
+    total_bonuses: string;
+    partner_bonuses: string;
+    partner_percent: string;
     used_bonuses: string;
     total_revenue: string;
-    partner_percent: string;
-    possible_bonuses: string;
-    actual_percent: string;
     bonus_load_percent: string;
     bonus_debt: string;
     debt_share_percent: string;
