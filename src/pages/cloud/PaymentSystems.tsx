@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { CreditCard, ArrowLeft, SortAsc, SortDesc, Check, X, RussianRuble } from 'lucide-react';
-import { shm_request } from '../lib/shm_request';
+import { shm_request } from '../../lib/shm_request';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { UniversalPaymentModal, PaymentSystem } from '../modals/PaymentSystems/UniversalPaymentModal';
+import { UniversalPaymentModal, PaymentSystem } from '../../modals/PaymentSystems/UniversalPaymentModal';
 
 type SortType = 'alpha' | 'price-asc' | 'price-desc' | 'paid-first' | 'unpaid-first';
 
@@ -50,17 +50,17 @@ function PaymentSystems() {
 
   const sortSystems = (systems: PaymentSystem[]): PaymentSystem[] => {
     const sorted = [...systems];
-    
+
     switch (sortType) {
       case 'alpha':
         return sorted.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
-      
+
       case 'price-asc':
         return sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
-      
+
       case 'price-desc':
         return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
-      
+
       case 'paid-first':
         return sorted.sort((a, b) => {
           if (a.paid === b.paid) {
@@ -68,7 +68,7 @@ function PaymentSystems() {
           }
           return a.paid ? -1 : 1;
         });
-      
+
       case 'unpaid-first':
         return sorted.sort((a, b) => {
           if (a.paid === b.paid) {
@@ -76,7 +76,7 @@ function PaymentSystems() {
           }
           return a.paid ? 1 : -1;
         });
-      
+
       default:
         return sorted;
     }
@@ -106,7 +106,7 @@ function PaymentSystems() {
           <CreditCard className="w-7 h-7" style={{ color: 'var(--theme-primary-color)' }} />
           Платежные системы
         </h1>
-        
+
         <div className="flex items-center gap-2">
           {/* Кнопки сортировки */}
           <div className="flex items-center gap-1 mr-4">
@@ -122,7 +122,7 @@ function PaymentSystems() {
             >
               <SortAsc className="w-4 h-4" />
             </button>
-            
+
             <button
               onClick={() => setSortType(sortType === 'price-asc' ? 'price-desc' : 'price-asc')}
               className={`px-3 py-2 rounded text-sm transition-colors flex items-center gap-1 ${sortType === 'price-asc' || sortType === 'price-desc' ? 'ring-2 ring-blue-500' : ''}`}
@@ -136,7 +136,7 @@ function PaymentSystems() {
               <RussianRuble className="w-4 h-4" />
               {sortType === 'price-desc' ? <SortDesc className="w-3 h-3" /> : <SortAsc className="w-3 h-3" />}
             </button>
-            
+
             <button
               onClick={() => setSortType(sortType === 'paid-first' ? 'unpaid-first' : 'paid-first')}
               className={`px-3 py-2 rounded text-sm transition-colors flex items-center gap-1 ${sortType === 'paid-first' || sortType === 'unpaid-first' ? 'ring-2 ring-blue-500' : ''}`}
@@ -150,7 +150,7 @@ function PaymentSystems() {
               {sortType === 'unpaid-first' ? <X className="w-4 h-4" /> : <Check className="w-4 h-4" />}
             </button>
           </div>
-          
+
           <button
             onClick={() => navigate(-1)}
             className="px-4 py-2 rounded flex items-center gap-2"

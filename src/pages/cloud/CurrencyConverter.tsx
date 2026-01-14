@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, RefreshCw, ArrowLeft, Save, Undo2 } from 'lucide-react';
-import { shm_request } from '../lib/shm_request';
+import { shm_request } from '../../lib/shm_request';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 

@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { ShmCloudPaymentModal } from '../modals/ShmCloudPaymentModal';
 import { IpResetConfirmationModal } from '../modals/IpResetConfirmationModal';
 import { Link } from 'react-router-dom';
-import type { SubscriptionInfo } from './Subscription';
+import type { SubscriptionInfo } from './cloud/Subscription';
 
 interface CloudUser {
   login?: string;
