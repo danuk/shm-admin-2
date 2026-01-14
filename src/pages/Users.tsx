@@ -14,13 +14,13 @@ const userColumns = [
   { key: 'full_name', label: 'Клиент', visible: true, sortable: true },
   { key: 'balance', label: 'Баланс', visible: true, sortable: true },
   { key: 'bonus', label: 'Бонусы', visible: true, sortable: true },
-  { key: 'settings', label: 'Settings', visible: true, sortable: true },
+  { key: 'settings', label: 'Settings', visible: true, sortable: false },
   { key: 'block', label: 'block', visible: false, sortable: false },
   { key: 'phone', label: 'phone', visible: false, sortable: true },
   { key: 'created', label: 'Дата создания', visible: false, sortable: true },
   { key: 'last_login', label: 'Последний вход', visible: false, sortable: true },
   { key: 'can_overdraft', label: 'can_overdraft', visible: false, sortable: true },
-  { key: 'comment', label: 'comment', visible: false, sortable: true },
+  { key: 'comment', label: 'comment', visible: false, sortable: false },
   { key: 'create_act', label: 'create_act', visible: false, sortable: true },
   { key: 'credit', label: 'credit', visible: false, sortable: true },
   { key: 'discount', label: 'discount', visible: false, sortable: true },
@@ -58,7 +58,12 @@ function Users() {
     const activeFilters: Record<string, any> = {};
     Object.entries(f).forEach(([key, value]) => {
       if (value) {
-        const filterValue = fm === 'like' ? { '-like': `%${value}%` } : value;
+        let filterValue;
+        if ( key === 'settings' ) {
+          filterValue = `%${value}%`;
+        } else {
+          filterValue = fm === 'like' ? { '-like': `%${value}%` } : `%${value}%`;
+        }
         if (key.includes('.')) {
           const parts = key.split('.');
           let current = activeFilters;

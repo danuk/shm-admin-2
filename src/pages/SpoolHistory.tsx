@@ -45,7 +45,7 @@ const spoolHistoryColumns = [
   { key: 'event', label: 'Событие', visible: false, sortable: false, filterable: false },
   { key: 'id', label: 'ID', visible: false, sortable: true },
   { key: 'prio', label: 'Приоритет', visible: false, sortable: true },
-  { key: 'settings', label: 'Settings', visible: false, sortable: false, filterable: false },
+  { key: 'settings', label: 'Settings', visible: false, sortable: false },
   { key: 'spool_id', label: 'spool_id', visible: false, sortable: true },
   { key: 'user_service_id', label: 'user_service_id', visible: false, sortable: true },
 ];

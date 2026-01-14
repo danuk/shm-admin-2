@@ -13,6 +13,7 @@ const payColumns = [
   { key: 'date', label: 'Дата', visible: true, sortable: true },
   { key: 'pay_system_id', label: 'Плат. система', visible: false, sortable: true },
   { key: 'comment', label: 'Комментарий', visible: false, sortable: false },
+  { key: 'uniq_key', label: 'Уникальный ключ', visible: false, sortable: false, filterable: false },
 ];
 
 function Pays() {

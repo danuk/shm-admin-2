@@ -30,6 +30,8 @@ const serverColumns = [
   { key: 'enabled', label: 'Включен', visible: true, sortable: true },
   { key: 'weight', label: 'Вес', visible: false, sortable: true },
   { key: 'services_count', label: 'Услуг', visible: false, sortable: true },
+  { key: 'fail_count', label: 'Количество сбоев', visible: false, sortable: true },
+  { key: 'settings', label: 'Settings', visible: false, sortable: false },
 ];
 
 function Servers() {
@@ -45,6 +47,7 @@ function Servers() {
   const [selectedRow, setSelectedRow] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [serverToDuplicate, setServerToDuplicate] = useState<any>(null);
 
   const fetchData = useCallback((l: number, o: number, f: Record<string, string>, fm: 'like' | 'exact', sf?: string, sd?: SortDirection) => {
     setLoading(true);
@@ -148,6 +151,12 @@ function Servers() {
     }
   };
 
+  const handleDuplicate = (serverData: any) => {
+    setServerToDuplicate(serverData);
+    setModalOpen(false);
+    setCreateModalOpen(true);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex items-center justify-between mb-4">
@@ -188,11 +197,16 @@ function Servers() {
         data={selectedRow}
         onSave={handleSave}
         onDelete={handleDelete}
+        onDuplicate={handleDuplicate}
       />
       <ServerCreateModal
         open={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
+        onClose={() => {
+          setCreateModalOpen(false);
+          setServerToDuplicate(null);
+        }}
         onSave={handleCreate}
+        initialData={serverToDuplicate}
       />
     </div>
   );

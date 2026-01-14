@@ -13,6 +13,7 @@ const promoColumns = [
   { key: 'expire', label: 'Истекает', visible: true, sortable: true },
   { key: 'used', label: 'Использован', visible: false, sortable: true },
   { key: 'used_by', label: 'Кем использован', visible: false, sortable: true },
+  { key: 'settings', label: 'Settings', visible: false, sortable: false },
 ];
 
 function Promo() {

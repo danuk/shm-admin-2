@@ -8,7 +8,8 @@ import { Plus } from 'lucide-react';
 const identityColumns = [
   { key: 'id', label: 'ID', visible: true, sortable: true },
   { key: 'name', label: 'Название', visible: true, sortable: true },
-  { key: 'fingerprint', label: 'Fingerprint', visible: true, sortable: false },
+  { key: 'fingerprint', label: 'Fingerprint', visible: false, sortable: false, filterable: false },
+  { key: 'public_key', label: 'public_key', visible: false, sortable: false, filterable: false },
 ];
 
 function Identities() {

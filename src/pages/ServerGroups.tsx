@@ -23,6 +23,7 @@ const serverGroupColumns = [
       { value: 'telegram', label: 'telegram' },
     ]
   },
+  { key: 'settings', label: 'Settings', visible: false, sortable: false },
 ];
 
 function ServerGroups() {

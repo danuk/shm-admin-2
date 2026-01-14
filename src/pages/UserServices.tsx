@@ -43,12 +43,34 @@ const userServiceColumns = [
       </span>
     )
   },
+  {
+    key: 'status_before',
+    label: 'Статус до',
+    visible: false,
+    sortable: true,
+    filterType: 'select' as const,
+    filterOptions: [
+      { value: 'ACTIVE', label: 'ACTIVE' },
+      { value: 'BLOCK', label: 'BLOCK' },
+      { value: 'NOT PAID', label: 'NOT PAID' },
+      { value: 'PROGRESS', label: 'PROGRESS' },
+    ],
+    render: (value: string) => (
+      <span style={{ color: getStatusColor(value), fontWeight: 500 }}>
+        {value}
+      </span>
+    )
+  },
   { key: 'created', label: 'Создано', visible: true, sortable: true },
   { key: 'expire', label: 'Истекает', visible: true, sortable: true },
   { key: 'category', label: 'Категория', visible: false, sortable: true },
   { key: 'auto_bill', label: 'Автобиллинг', visible: false, sortable: false },
   { key: 'next', label: 'След. услуга', visible: false, sortable: true },
   { key: 'parent', label: 'Родитель', visible: false, sortable: true },
+  { key: 'service', label: 'service', visible: false, sortable: false, filterable: false },
+  { key: 'service_id', label: 'service_id', visible: false, sortable: true },
+  { key: 'withdraw_id', label: 'withdraw_id', visible: false, sortable: true },
+  { key: 'settings', label: 'settings', visible: false, sortable: false },
 ];
 
 function UserServices() {
@@ -87,7 +109,12 @@ function UserServices() {
     const activeFilters: Record<string, any> = {};
     Object.entries(f).forEach(([key, value]) => {
       if (value) {
-        const filterValue = fm === 'like' ? { '-like': `%${value}%` } : value;
+        let filterValue;
+        if ( key === 'settings' ) {
+          filterValue = `%${value}%`;
+        } else {
+          filterValue = fm === 'like' ? { '-like': `%${value}%` } : `%${value}%`;
+        }
         if (key.includes('.')) {
           const parts = key.split('.');
           let current = activeFilters;

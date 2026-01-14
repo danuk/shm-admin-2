@@ -7,7 +7,7 @@ import { Plus, Upload } from 'lucide-react';
 
 const templateColumns = [
   { key: 'id', label: 'Имя шаблона', visible: true, sortable: true },
-  { key: 'settings', label: 'Настройки', visible: true, sortable: false, filterable: false },
+  { key: 'settings', label: 'Настройки', visible: true, sortable: false },
 ];
 
 function Templates() {
