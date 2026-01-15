@@ -1,5 +1,6 @@
 import { useAuthStore } from '../store/authStore';
 import { createApiUrl, createPath } from './basePath';
+import { showGlobalToast } from '../components/Toast';
 
 export async function shm_request<T = any>(url: string, options?: RequestInit): Promise<T> {
   const sessionId = useAuthStore.getState().getSessionId();
@@ -7,15 +8,23 @@ export async function shm_request<T = any>(url: string, options?: RequestInit): 
   // Ensure API URLs use proper base path
   const fullUrl = url.startsWith('http') ? url : createApiUrl(url);
 
-  const response = await fetch(fullUrl, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(sessionId ? { 'session-id': sessionId } : {}),
-      ...(options?.headers || {}),
-    },
-    ...options,
-  });
+  let response: Response;
+  try {
+    response = await fetch(fullUrl, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(sessionId ? { 'session-id': sessionId } : {}),
+        ...(options?.headers || {}),
+      },
+      ...options,
+    });
+  } catch (networkError) {
+    // Network error (server down, CORS, etc.)
+    const message = 'Ошибка сети: сервер недоступен';
+    showGlobalToast(message, 'error');
+    throw new Error(message);
+  }
 
   if (response.status === 401) {
     useAuthStore.getState().logout();
@@ -33,9 +42,16 @@ export async function shm_request<T = any>(url: string, options?: RequestInit): 
       errorData = { error: errorText || response.statusText };
     }
 
-    const error = new Error(errorData.error || errorText || response.statusText) as any;
+    const errorMessage = errorData.error || errorText || response.statusText;
+    const error = new Error(errorMessage) as any;
     error.data = errorData;
     error.status = response.status;
+
+    // Show toast for server errors (5xx) and client errors (4xx except 401)
+    if (response.status >= 400) {
+      showGlobalToast(`Ошибка ${response.status}: ${errorMessage}`, 'error');
+    }
+
     throw error;
   }
 

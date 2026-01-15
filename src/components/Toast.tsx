@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface Toast {
   id: number;
@@ -14,6 +14,18 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
+// Global event emitter for showing toasts from outside React components
+type ToastEventListener = (message: string, type: 'success' | 'error' | 'info') => void;
+let toastListener: ToastEventListener | null = null;
+
+export function showGlobalToast(message: string, type: 'success' | 'error' | 'info' = 'error') {
+  if (toastListener) {
+    toastListener(message, type);
+  } else {
+    console.error('[Toast]', message);
+  }
+}
+
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -26,6 +38,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const removeToast = (id: number) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
+
+  // Register global listener
+  useEffect(() => {
+    toastListener = addToast;
+    return () => {
+      toastListener = null;
+    };
+  }, []);
 
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>

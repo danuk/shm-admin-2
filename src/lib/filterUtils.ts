@@ -1,5 +1,4 @@
-// Поля, которые всегда используют LIKE (независимо от режима)
-const ALWAYS_LIKE_FIELDS = ['settings'];
+const ALWAYS_LIKE_FIELDS = ['settings', 'comment', 'event', 'response' ];
 
 // Поля, которые используют exact при выбранном пользователе
 const EXACT_WHEN_USER_SELECTED = ['user_id'];
@@ -21,7 +20,7 @@ export function buildApiFilters(
     } else if (EXACT_WHEN_USER_SELECTED.includes(key) && selectedUserId) {
       filterValue = value;
     } else {
-      filterValue = filterMode === 'exact' ? `%${value}%` : { '-like': `%${value}%` };
+      filterValue = filterMode === 'exact' ? value : { '-like': `%${value}%` };
     }
 
     // Поддержка вложенных ключей (например, 'event.title')

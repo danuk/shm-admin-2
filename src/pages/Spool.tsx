@@ -11,18 +11,18 @@ const spoolColumns = [
   { key: 'created', label: 'Создано', visible: true, sortable: true },
   { key: 'user_id', label: 'USER ID', visible: true, sortable: true },
   {
-    key: 'event',
+    key: 'event_name',
     label: 'Событие',
     visible: true,
-    sortable: true,
+    sortable: false,
     filterKey: 'event.name',
     render: (value: any, row: any) => row?.event?.name || null
   },
   {
-    key: 'title',
+    key: 'event_title',
     label: 'Название',
     visible: true,
-    sortable: true,
+    sortable: false,
     filterKey: 'event.title',
     render: (value: any, row: any) => row?.event?.title || null
   },
@@ -41,9 +41,9 @@ const spoolColumns = [
       { value: 'NEW', label: 'NEW' },
     ]
   },
-  { key: 'response', label: 'response', visible: true, sortable: false, filterable: false },
+  { key: 'response', label: 'response', visible: true, sortable: false },
   { key: 'delayed', label: 'Задержка', visible: false, sortable: true },
-  { key: 'event', label: 'Событие', visible: false, sortable: false, filterable: false },
+  { key: 'event', label: 'Событие', visible: false, sortable: false },
   { key: 'executed', label: 'Выполнено', visible: false, sortable: true },
   { key: 'id', label: 'ID', visible: false, sortable: true },
   { key: 'prio', label: 'Приоритет', visible: false, sortable: true },
