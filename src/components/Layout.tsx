@@ -279,7 +279,6 @@ function Layout() {
         method: isNewTemplate ? 'PUT' : 'POST',
         body: JSON.stringify(templateData)
       });
-      toast.success(isNewTemplate ? 'Шаблон создан' : 'Шаблон обновлен');
       return data;
     } catch (error: any) {
       toast.error(error?.message || 'Ошибка при сохранении шаблона');
