@@ -106,7 +106,7 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
         ...formData,
       };
 
-      if ( existingData.need_update_to ) {
+      if (existingData && existingData.need_update_to) {
         systemConfig.need_update_to = existingData.need_update_to;
       }
 
@@ -134,6 +134,11 @@ export const UniversalPaymentModal: React.FC<UniversalPaymentModalProps> = ({ op
         onClose();
       }
     } catch (error) {
+      if (error && error.stack) {
+        console.error('Ошибка сохранения настроек:', error.stack, error);
+      } else {
+        console.error('Ошибка сохранения настроек:', error);
+      }
       toast.error('Ошибка сохранения настроек');
     }
   };
