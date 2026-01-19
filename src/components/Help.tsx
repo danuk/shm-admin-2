@@ -55,7 +55,7 @@ function Help({ content }: HelpProps) {
           />
           {/* Панель справки */}
           <div
-            className="fixed top-0 right-0 w-[600px] h-full shadow-2xl z-50 overflow-auto"
+            className="fixed top-0 right-0 w-[300px] sm:w-[600px] h-full shadow-2xl z-50 overflow-auto"
             style={{
               backgroundColor: 'var(--theme-card-bg)',
               borderLeft: '1px solid var(--theme-card-border)',
