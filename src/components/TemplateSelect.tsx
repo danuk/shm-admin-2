@@ -118,7 +118,9 @@ export default function TemplateSelect({
     setLoading(true);
     onLoadingChange?.(true);
 
-    shm_request(`shm/v1/admin/template?id=${encodeURIComponent(query)}`)
+    const filter = { 'id': { '-like': `%${query}%` } };
+
+    shm_request(`shm/v1/admin/template?filter=${encodeURIComponent(JSON.stringify(filter))}`)
       .then(res => {
         const data = res.data || res;
         const templates = Array.isArray(data) ? data : [];
