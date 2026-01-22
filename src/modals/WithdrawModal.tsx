@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Modal from '../components/Modal';
-import { Save, X } from 'lucide-react';
+import { Save, X, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import UserSelect from '../components/UserSelect';
 import ServiceSelect from '../components/ServiceSelect';
+import { shm_request } from '../lib/shm_request';
 
 interface WithdrawModalProps {
   open: boolean;
@@ -20,6 +21,8 @@ export default function WithdrawModal({
 }: WithdrawModalProps) {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [saving, setSaving] = useState(false);
+  const [calculating, setCalculating] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (data) {
@@ -29,9 +32,53 @@ export default function WithdrawModal({
     }
   }, [data, open]);
 
+  // Функция для отправки dry_run запроса
+  const calculateWithDryRun = useCallback(async (newFormData: Record<string, any>) => {
+    if (!newFormData.withdraw_id) return;
+
+    setCalculating(true);
+    try {
+      const response = await shm_request('shm/v1/admin/user/service/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...newFormData,
+          dry_run: 1,
+        }),
+      });
+
+      if (response.data && response.data[0]) {
+        const calculated = response.data[0];
+        setFormData(prev => ({
+          ...prev,
+          total: calculated.total,
+          end_date: calculated.end_date,
+        }));
+      }
+    } finally {
+      setCalculating(false);
+    }
+  }, []);
+
   const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      calculateWithDryRun(newFormData);
+    }, 500);
   };
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
@@ -198,8 +245,9 @@ export default function WithdrawModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1" style={labelStyles}>
+          <label className="text-sm font-medium mb-1 flex items-center gap-2" style={labelStyles}>
             Итого
+            {calculating && <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent-primary)' }} />}
           </label>
           <input
             type="text"
@@ -224,9 +272,10 @@ export default function WithdrawModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1" style={labelStyles}>
+          <label className="text-sm font-medium mb-1 flex items-center gap-2" style={labelStyles}>
               Дата окончания
-            </label>
+            {calculating && <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent-primary)' }} />}
+          </label>
             <input
               type="text"
               value={formData.end_date || ''}
