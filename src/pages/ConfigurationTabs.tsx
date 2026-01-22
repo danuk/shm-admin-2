@@ -168,6 +168,8 @@ function ConfigurationTabs() {
   const [getUpdatesResult, setGetUpdatesResult] = useState<any>(null);
   const [getUpdatesLoading, setGetUpdatesLoading] = useState(false);
   const [getUpdatesError, setGetUpdatesError] = useState('');
+  const [testMessageLoading, setTestMessageLoading] = useState(false);
+  const [testMessageResult, setTestMessageResult] = useState<any>(null);
 
   // Все доступные типы обновлений Telegram с описаниями
   const allTelegramUpdates = [
@@ -882,6 +884,49 @@ function ConfigurationTabs() {
       setGetUpdatesError(error.message || 'Ошибка сети');
     } finally {
       setGetUpdatesLoading(false);
+    }
+  };
+
+  const sendTestMessage = async (token: string, chatId: string) => {
+    if (!token) {
+      toast.error('Токен бота не указан');
+      return;
+    }
+    if (!chatId) {
+      toast.error('chat_id не указан');
+      return;
+    }
+
+    setTestMessageLoading(true);
+    setTestMessageResult(null);
+
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: '🤖 Тестовое сообщение от SHM Admin\n\nЕсли вы получили это сообщение, значит настройка работает корректно!',
+        }),
+      });
+
+      const data = await response.json();
+      setTestMessageResult(data);
+
+      if (data.ok) {
+        toast.success('Тестовое сообщение успешно отправлено!');
+      } else {
+        const errorMsg = data.description || JSON.stringify(data, null, 2);
+        toast.error(`Ошибка отправки сообщения: ${errorMsg}`);
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      toast.error(`Ошибка отправки сообщения: ${errorMsg}`);
+      console.error(error);
+    } finally {
+      setTestMessageLoading(false);
     }
   };
 
@@ -1806,14 +1851,35 @@ https://t.me/Name_bot?start=USER_ID
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--theme-content-text)' }}>
                   chat_id
                 </label>
-                <input
-                  type="text"
-                  value={editBotChatId}
-                  onChange={(e) => setEditBotChatId(e.target.value)}
-                  className="w-full px-3 py-2 rounded border font-mono text-sm"
-                  style={inputStyles}
-                  placeholder="1234567890 или -1001234567890"
-                />
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={editBotChatId}
+                    onChange={(e) => setEditBotChatId(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded border font-mono text-sm"
+                    style={inputStyles}
+                    placeholder="1234567890 или -1001234567890"
+                  />
+                  <button
+                    onClick={() => sendTestMessage(editBotToken, editBotChatId)}
+                    disabled={testMessageLoading || !editBotToken || !editBotChatId}
+                    className="px-4 py-2 rounded flex items-center justify-center gap-2 whitespace-nowrap"
+                    style={{
+                      backgroundColor: testMessageLoading || !editBotToken || !editBotChatId ? 'var(--theme-button-secondary-bg)' : 'var(--accent-primary)',
+                      color: testMessageLoading || !editBotToken || !editBotChatId ? 'var(--theme-button-secondary-text)' : 'var(--accent-text)',
+                      opacity: testMessageLoading || !editBotToken || !editBotChatId ? 0.6 : 1,
+                      cursor: testMessageLoading || !editBotToken || !editBotChatId ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {testMessageLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      </>
+                    ) : (
+                      'Тест'
+                    )}
+                  </button>
+                </div>
                 <p className="text-xs mt-1" style={{ color: 'var(--theme-content-text-muted)' }}>
                   chat_id используется для отправки сообщений от бота в определённый чат или канал.
                 </p>
