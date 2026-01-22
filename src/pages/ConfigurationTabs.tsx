@@ -323,9 +323,12 @@ function ConfigurationTabs() {
           setCompanyName(item.value?.name || '');
           setLogoUrl(item.value?.logoUrl || '');
         } else if (item.key === 'telegram') {
-          // Отделяем xtr_exchange_rate от ботов
-          const { xtr_exchange_rate, ...bots } = item.value || {};
+          // Отделяем xtr_exchange_rate и webhook_url от ботов
+          const { xtr_exchange_rate, webhook_url, ...bots } = item.value || {};
           setTelegramBots(bots || {});
+          if (webhook_url) {
+            setWebhookUrl(webhook_url);
+          }
         } else if (item.key === '_shm') {
           setCloudAuth(item.value?.cloud?.auth || null);
         } else if (item.key === 'otp') {
@@ -824,11 +827,25 @@ function ConfigurationTabs() {
       });
 
       if (response.ok && response.result) {
-        // Обновляем webhook_set в конфиге
-        await saveTelegramBot(botName, {
-          ...bot,
-          webhook_set: true,
+        // Обновляем webhook_set в конфиге и сохраняем webhook URL
+        await saveConfigItem('telegram', {
+          ...telegramBots,
+          [botName]: {
+            ...bot,
+            webhook_set: true,
+          },
+          webhook_url: url,
         });
+
+        // Обновляем локальное состояние
+        setTelegramBots(prev => ({
+          ...prev,
+          [botName]: {
+            ...prev[botName],
+            webhook_set: true,
+          },
+        }));
+
         toast.success(response.description || `Вебхук для бота "${botName}" установлен`);
         setWebhookModalOpen(false);
         if (fromModal) {
@@ -875,7 +892,7 @@ function ConfigurationTabs() {
     }
 
     try {
-      const response = await fetch(`https://api.telegram.org/bot${token}/deleteWebhook`);
+      const response = await fetch(`https://api.telegram.org/bot${token}/deleteWebhook?drop_pending_updates=True`);
       const data = await response.json();
 
       if (data.ok) {
@@ -914,7 +931,10 @@ function ConfigurationTabs() {
   const openWebhookModal = (botName: string, bot: TelegramBot) => {
     setWebhookBotName(botName);
     setWebhookBotData(bot);
-    setWebhookUrl(apiUrl);
+    // Используем сохраненный webhook URL, если он есть, иначе apiUrl
+    if (!webhookUrl) {
+      setWebhookUrl(apiUrl);
+    }
     setWebhookAllowedUpdates([...defaultAllowedUpdates]);
     setGetUpdatesResult(null);
     setGetUpdatesError('');
