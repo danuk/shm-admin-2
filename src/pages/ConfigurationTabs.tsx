@@ -835,10 +835,12 @@ function ConfigurationTabs() {
           await loadConfig();
         }
       } else {
-        toast.error('Ошибка установки вебхука');
+        const errorMsg = response.description || JSON.stringify(response, null, 2);
+        toast.error(`Ошибка установки вебхука: ${errorMsg}`);
       }
     } catch (error) {
-      toast.error('Ошибка установки вебхука');
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      toast.error(`Ошибка установки вебхука: ${errorMsg}`);
     }
   };
 
