@@ -165,6 +165,9 @@ function ConfigurationTabs() {
     'pre_checkout_query',
     'my_chat_member',
   ]);
+  const [getUpdatesResult, setGetUpdatesResult] = useState<any>(null);
+  const [getUpdatesLoading, setGetUpdatesLoading] = useState(false);
+  const [getUpdatesError, setGetUpdatesError] = useState('');
 
   // Все доступные типы обновлений Telegram с описаниями
   const allTelegramUpdates = [
@@ -839,11 +842,37 @@ function ConfigurationTabs() {
     }
   };
 
+  const getUpdates = async (token: string) => {
+    if (!token) {
+      setGetUpdatesError('Токен не указан');
+      return;
+    }
+
+    setGetUpdatesLoading(true);
+    setGetUpdatesError('');
+    setGetUpdatesResult(null);
+
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${token}/getUpdates`);
+      const data = await response.json();
+      setGetUpdatesResult(data);
+      if (!data.ok) {
+        setGetUpdatesError(data.description || 'Ошибка при получении обновлений');
+      }
+    } catch (error: any) {
+      setGetUpdatesError(error.message || 'Ошибка сети');
+    } finally {
+      setGetUpdatesLoading(false);
+    }
+  };
+
   const openWebhookModal = (botName: string, bot: TelegramBot) => {
     setWebhookBotName(botName);
     setWebhookBotData(bot);
     setWebhookUrl(apiUrl);
     setWebhookAllowedUpdates([...defaultAllowedUpdates]);
+    setGetUpdatesResult(null);
+    setGetUpdatesError('');
     setWebhookModalOpen(true);
   };
 
@@ -1726,15 +1755,60 @@ https://t.me/Name_bot?start=USER_ID
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--theme-content-text)' }}>
                   Токен бота
                 </label>
-                <input
-                  type="text"
-                  value={editBotToken}
-                  onChange={(e) => setEditBotToken(e.target.value)}
-                  className="w-full px-3 py-2 rounded border font-mono text-sm"
-                  style={inputStyles}
-                  placeholder="123456:ABC-DEF1234..."
-                />
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={editBotToken}
+                    onChange={(e) => setEditBotToken(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded border font-mono text-sm"
+                    style={inputStyles}
+                    placeholder="123456:ABC-DEF1234..."
+                  />
+                  <button
+                    onClick={() => getUpdates(editBotToken)}
+                    disabled={getUpdatesLoading || !editBotToken}
+                    className="px-4 py-2 rounded flex items-center justify-center gap-2 whitespace-nowrap"
+                    style={{
+                      backgroundColor: getUpdatesLoading || !editBotToken ? 'var(--theme-button-secondary-bg)' : 'var(--accent-primary)',
+                      color: getUpdatesLoading || !editBotToken ? 'var(--theme-button-secondary-text)' : 'var(--accent-text)',
+                      opacity: getUpdatesLoading || !editBotToken ? 0.6 : 1,
+                      cursor: getUpdatesLoading || !editBotToken ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {getUpdatesLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      </>
+                    ) : (
+                      'getUpdates'
+                    )}
+                  </button>
+                </div>
               </div>
+
+              {/* getUpdates результат */}
+              {getUpdatesResult && (
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--theme-content-text)' }}>
+                    Результат getUpdates
+                  </label>
+                  <div
+                    className="p-3 rounded border font-mono text-xs max-h-48 overflow-y-auto"
+                    style={{
+                      backgroundColor: 'var(--theme-input-bg)',
+                      borderColor: getUpdatesError ? 'var(--accent-danger)' : 'var(--theme-input-border)',
+                      color: 'var(--theme-content-text)',
+                    }}
+                  >
+                    <pre>{JSON.stringify(getUpdatesResult, null, 2)}</pre>
+                  </div>
+                  {getUpdatesError && (
+                    <p className="text-xs mt-1" style={{ color: 'var(--accent-danger)' }}>
+                      ⚠️ {getUpdatesError}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Секретный ключ */}
               <div>
@@ -1981,6 +2055,30 @@ https://t.me/Name_bot?start=USER_ID
                   Выбрано: {webhookAllowedUpdates.length} из {allTelegramUpdates.length}
                 </p>
               </div>
+
+              {/* getUpdates результат */}
+              {getUpdatesResult && (
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--theme-content-text)' }}>
+                    Результат getUpdates
+                  </label>
+                  <div
+                    className="p-3 rounded border font-mono text-xs max-h-64 overflow-y-auto"
+                    style={{
+                      backgroundColor: 'var(--theme-input-bg)',
+                      borderColor: getUpdatesError ? 'var(--accent-danger)' : 'var(--theme-input-border)',
+                      color: 'var(--theme-content-text)',
+                    }}
+                  >
+                    <pre>{JSON.stringify(getUpdatesResult, null, 2)}</pre>
+                  </div>
+                  {getUpdatesError && (
+                    <p className="text-xs mt-1" style={{ color: 'var(--accent-danger)' }}>
+                      ⚠️ {getUpdatesError}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4 border-t" style={{ borderColor: 'var(--theme-card-border)' }}>
                 <button
